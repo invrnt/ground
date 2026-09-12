@@ -1,0 +1,104 @@
+.workspace-summary {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.25fr);
+  gap: 24px;
+}
+.workspace-metric {
+  font-size: 56px;
+  font-weight: 750;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  margin: 0 0 16px;
+}
+.workspace-stock,
+.workspace-work {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--g-border);
+}
+.workspace-stock:last-child,
+.workspace-work:last-child {
+  border-bottom: 0;
+}
+.workspace-issues,
+.workspace-activity-cards,
+.workspace-interactions {
+  display: grid;
+  gap: 16px;
+}
+.workspace-issues h2 {
+  margin-bottom: 0;
+}
+.workspace-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.workspace-event-meta time {
+  font-size: 14px;
+  color: var(--g-muted);
+}
+.workspace-details {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 100px minmax(0, 1fr);
+  font-size: 14px;
+}
+.workspace-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.workspace-details pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.workspace-task {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--g-border);
+}
+.workspace-action-form {
+  display: grid;
+  gap: 16px;
+  padding-top: 16px;
+}
+.workspace-action-form select {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--g-border);
+  border-radius: 8px;
+  padding: 8px;
+  background: white;
+}
+.workspace-source-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.workspace-issues summary,
+.workspace-activity-cards summary,
+.workspace-task summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px 0;
+}
+.g-shell--recording .workspace-event-meta time,
+.g-shell--recording .workspace-details {
+  font-size: 24px;
+}
+@media (max-width: 800px) {
+  .workspace-summary {
+    grid-template-columns: 1fr;
+  }
+  .workspace-stock,
+  .workspace-work {
+    flex-wrap: wrap;
+  }
+  .workspace-metric {
+    font-size: 48px;
+  }
+}

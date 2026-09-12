@@ -1,0 +1,56 @@
+1
+00:00:00,000 --> 00:00:08,000
+On a jobsite, the update arrives in a voice note.
+Ground turns it into work the whole team can act on.
+
+2
+00:00:08,000 --> 00:00:15,000
+We finished tiling Bathroom 2 and used the last
+eight boxes of grey porcelain tile.
+
+3
+00:00:15,000 --> 00:00:19,000
+There's a leak in the north wall.
+
+4
+00:00:19,000 --> 00:00:23,000
+Juan should inspect it tomorrow at nine.
+
+5
+00:00:23,000 --> 00:00:38,000
+Ground links the voice note and photo to Bathroom 2.
+Progress updates, stock reaches zero,
+and Juan gets the inspection.
+
+6
+00:00:38,000 --> 00:00:53,000
+The task and photo are already in Ambiguous,
+and the site report updates automatically.
+Luis only used Telegram.
+
+7
+00:00:53,000 --> 00:01:08,000
+Tomorrow's hallway needs twenty boxes.
+Ground searches supplier pages with Exa and compares
+the material, coverage and published price.
+
+8
+00:01:08,000 --> 00:01:24,000
+Here is the product page behind this option.
+Ground has prepared a request to confirm availability,
+delivery and the final quote.
+
+9
+00:01:24,000 --> 00:01:40,000
+I review the material, quantity and recipient,
+then approve the request.
+
+10
+00:01:40,000 --> 00:01:53,000
+The request arrives, the follow-up is scheduled,
+and the report records what happened.
+
+11
+00:01:53,000 --> 00:02:00,000
+One voice note. The site is updated, the work is assigned,
+and the next decision is ready. That's Ground.

@@ -1,0 +1,15 @@
+Checked commit: 52833a7033eb801163fb5159bb9bee0cba5e7a89
+Date: 2026-09-12
+Install, typecheck and build: passed
+PostgreSQL cases enabled with isolated schemas; connection value omitted.
+ ✓ packages/server/src/modules/workspace-sync/workspace-sync.critical.test.ts (2 tests) 258ms
+ ✓ packages/server/src/modules/sourcing/sourcing.critical.test.ts (3 tests) 351ms
+ ✓ packages/server/src/modules/ingestion/ingestion.critical.test.ts (3 tests) 303ms
+ ✓ packages/server/src/modules/site/site.critical.test.ts (2 tests) 502ms
+ ✓ packages/server/src/modules/purchases/purchases.critical.test.ts (1 test) 507ms
+ ✓ packages/server/src/modules/dispatch/dispatch.critical.test.ts (1 test) 638ms
+ ✓ packages/server/src/modules/procurement/procurement.critical.test.ts (1 test) 714ms
+ Test Files  7 passed (7)
+      Tests  13 passed (13)
+No provider calls. Existing SDK bundle-size warning remains.
+Compose container configuration parsed after release fix; Docker execution unverified.

@@ -1,0 +1,7 @@
+.sourcing-panel { display:grid; gap:1rem; min-width:0; }
+.sourcing-table-scroll { overflow-x:auto; }
+.sourcing-table { width:100%; border-collapse:collapse; text-align:left; }
+.sourcing-table th,.sourcing-table td { padding:.8rem; border-bottom:1px solid var(--g-border,#d5dadd); vertical-align:top; min-width:13rem; }
+.sourcing-table td:first-child { max-width:26rem; overflow-wrap:anywhere; }
+.sourcing-table details dl>div { display:flex; gap:.7rem; justify-content:space-between; }
+.sourcing-table dd { margin:0; }

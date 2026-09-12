@@ -1,0 +1,11 @@
+.requests-panel,.request-list { display:grid; gap:1rem; margin-block:1rem; }
+.requests-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.request-payload { white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; background:var(--g-surface-muted,#f4f6f4); border-radius:.5rem; padding:1rem; }
+.request-followup,.request-reply { border-top:1px solid var(--g-border,#d8dee8); margin-top:1rem; padding-top:.75rem; }
+.request-reply blockquote { margin-inline:0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.request-reconcile,.request-link-form { display:grid; gap:.85rem; margin-top:1rem; padding:1rem; border:1px solid var(--g-border,#d8dee8); border-radius:.5rem; }
+.request-reconcile p,.request-reconcile h3 { margin:0; }
+.request-reconcile label,.request-link-form label { display:grid; gap:.4rem; }
+.request-reconcile select,.request-link-form select { font:inherit; padding:.65rem; border:1px solid var(--g-border,#d8dee8); border-radius:.35rem; background:white; color:inherit; }
+.request-reconcile .request-check { display:flex; align-items:flex-start; gap:.6rem; }
+.request-check input { width:1.2rem; height:1.2rem; flex-shrink:0; }
