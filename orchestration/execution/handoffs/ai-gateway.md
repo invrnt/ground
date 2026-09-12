@@ -1,6 +1,6 @@
 # AI Gateway selection handoff
 
-Base: `main` at `4e782e2`, clean when inspected. Implementation commit: `710015f`. Branch: `codex/ground-ai-gateway`. Worktree: `/home/jc/dev/hackathons/ground-worktrees/ai-gateway`. Integration on main and repository PR feedback review belong to the Orchestrator and are pending this handoff.
+Base: `main` at `4e782e2`, clean when inspected. Implementation commit: `710015f`. Branch: `codex/ground-ai-gateway`. Worktree: `/home/jc/dev/hackathons/ground-worktrees/ai-gateway`. The Orchestrator merged through `1333893` onto main; final integration and feedback status are recorded below.
 
 ## Delivered
 
@@ -38,3 +38,12 @@ Official documentation inspected on 2026-09-12: [Vercel STT](https://vercel.com/
 - Vercel IDs/upstream information are recorded only if returned in recognized fields/headers. Costs remain unknown without a separate generation lookup; token usage is not a cost estimate.
 - Adapter requests have a 30-second timeout and no internal retries. Existing queue behavior, including bounded retries of some permanent inference failures, is unchanged and documented accurately. No external-send retry policy was touched.
 - Provider selection applies on restart; a partially processed report can retain a transcript from one gateway and use the other for subsequent extraction. Metadata is per operation and remains accurate.
+
+
+## Final integration and feedback record
+
+The Orchestrator reported the implementation and initial handoff merged through `1333893` onto main. The subsequent human commit `1ab2394`, updating AGENTS.md and the submission checklist, was preserved. This worktree rebased onto main without conflicts, and the updated root rules and `docs/release/submission.md` were read before this final documentation update.
+
+The Orchestrator resolved and inspected the actual GitHub repository [invrnt/ground](https://github.com/invrnt/ground) after integration. Its successful all-state PR query, limit 20, returned no PRs; there were no PR descriptions, reviews, comments or diffs to assess, and no feedback fixes or deferrals. This records the Orchestrator's review, not an independent duplicate query by this implementation agent. FEEDBACK.md remained absent.
+
+Only this handoff changed after the rebase. No additional tests were run, as requested; the checks above remain the implementation evidence. Live provider checks, eligibility verification, recording and final hackathon submission remain pending. Completing this provider-selector change does not complete those checklist items.
