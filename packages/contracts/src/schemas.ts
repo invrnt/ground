@@ -62,3 +62,6 @@ export const projectSnapshotSchema=z.object({project_id:idSchema,run_id:idSchema
 export type ProjectSnapshot=z.infer<typeof projectSnapshotSchema>;
 export const reportSnapshotSchema=z.object({id:idSchema,project_id:idSchema,run_id:idSchema,date:dateSchema,version:z.number().int(),generated_at:timestampSchema,sections:z.array(z.object({title:z.string(),text:z.string()}).strict()),evidence_ids:z.array(idSchema),source_ids:z.array(idSchema),request_ids:z.array(idSchema),links:z.array(externalObjectLinkSchema)}).strict();
 export type ReportSnapshot=z.infer<typeof reportSnapshotSchema>;
+export const loginInputSchema=z.object({username:z.string().min(1).max(100),password:z.string().min(1).max(1024)}).strict();
+export const sessionSchema=z.object({user:z.object({id:idSchema,username:z.string(),display_name:z.string(),roles:z.array(roleSchema)}).strict(),project_ids:z.array(idSchema),csrf_token:z.string()}).strict();
+export type Session=z.infer<typeof sessionSchema>;

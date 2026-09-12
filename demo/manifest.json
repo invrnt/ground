@@ -1,0 +1,8 @@
+{
+ "scenario_version":"la-arboleda-v1","scenario_date":"2026-09-12","timezone":"America/Bogota","currency":"COP","project_name":"La Arboleda","demo":true,
+ "material":{"code":"POR-GRIS-60","brand":null,"reference":null,"finish":null,"source_url":null,"coverage":"1.26"},
+ "test_address":null,"desired_delivery_date":"2026-09-13","drawing":{"reference":"P-03","revision":3,"wall":"W2","demo":true},
+ "reminder_delay_seconds":120,"telegram_chat_id":null,"test_recipient_id":null,"test_recipient_reachable":false,"ambiguous_workspace_id":null,
+ "members":[{"username":"admin","name":"Demo administrator","roles":["admin"],"telegram_sender_id":null,"remote_user_id":null},{"username":"luis","name":"Luis","roles":["worker"],"telegram_sender_id":null,"remote_user_id":null},{"username":"ana","name":"Ana","roles":["supervisor"],"telegram_sender_id":null,"remote_user_id":null},{"username":"juan","name":"Juan","roles":["assignee"],"telegram_sender_id":null,"remote_user_id":null},{"username":"purchasing","name":"Demo purchasing","roles":["purchasing"],"telegram_sender_id":null,"remote_user_id":null}],
+ "media":[],"configuration_status":"pending real product, identities, recipient and media"
+}
