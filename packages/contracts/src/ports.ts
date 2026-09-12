@@ -30,3 +30,5 @@ export interface AmbiguousAdapter {
  getDocument(id: string): Promise<RemoteObject & { content: string }>;
  findByMarker(kind: 'file' | 'task' | 'document', marker: string): Promise<{ status: 'unique' | 'none' | 'ambiguous' | 'unsupported'; object: RemoteObject | null }>;
 }
+export interface InventoryReceiptInput { context:ActorContext; material_id:string; quantity:string; unit:string; receipt_line_id:string; idempotency_key:string; evidence_ids:string[]; expected_version:number; }
+export interface InventoryReceiptService extends InventoryService { receive(input:InventoryReceiptInput,tx?:TransactionContext):Promise<OperationResult>; }
