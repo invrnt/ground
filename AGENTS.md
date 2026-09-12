@@ -1,5 +1,9 @@
 # Global agent rules
 
+## Hackathon context
+
+Ground is an entry for the Agents, Everywhere hackathon, September 12–13, 2026. Read the [submission checklist](docs/release/submission.md) before planning or declaring delivery complete. It records event requirements, judging evidence and pending local-rule verification. The starter kit is optional; preserve Ground's architecture and prioritize one complete, verifiable interaction. Follow the user's minimal-testing scope. Do not claim eligibility, live results or completed submission without evidence.
+
 ## Authority and reading
 
 Read this root file, the [orchestration reading order](orchestration/README.md), your exact prompt and all prior stage handoffs. `PRD.md` is the product source. The user's explicit request to minimize testing overrides the PRD's exhaustive QA and measurement schedule; [testing strategy](orchestration/testing/strategy.md) records that change. All functional requirements remain in scope.
