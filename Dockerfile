@@ -1,4 +1,5 @@
 FROM node:24.21.0-bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.24.0 --activate
 COPY . .

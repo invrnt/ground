@@ -50,3 +50,5 @@ The Orchestrator owns no implementation paths. It can inspect all files and perf
 6. Stage 7 transfers application repair ownership to release-readiness after all earlier agents are done. If PR feedback later needs a feature specialist, pause the release owner for those exact paths and use a sequential repair grant.
 
 Do not add an unowned file silently. The S owner assigns it in this table and the affected prompt before work begins. Use the existing feature directory when possible. Changes to documentation never automatically authorize changes outside the user's product scope.
+
+Stage 3 temporary grant from the Orchestrator: site-domain may edit `packages/server/src/modules/project/repository.ts` solely to extend the canonical snapshot with site entities, aliases and computed progress. The prior runtime owner is inactive for this path. No second snapshot implementation is authorized.
