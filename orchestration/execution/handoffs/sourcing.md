@@ -39,3 +39,9 @@ Merged peer baseline `8070631`. Registers sourcing, purchases and reporting modu
 The first combined `pnpm check` passed all typechecks and builds, with the existing SDK chunk-size warning. Eight of nine tests passed. The ingestion fixture's raw SELECT * included the new internal desired_job field and failed strict Job parsing; the original owner is making the bounded fixture repair. Production queue decoding already excludes that internal field.
 
 Integration review found report/evidence read-lock upgrades that could deadlock concurrent readers. The Orchestrator granted site history's read-only SHARE option and explicit run-then-project SHARE ordering in the canonical repository, and delegated the matching purchases list repair to its owner. Source completion takes the run lock before its read-and-event transaction. Mutating operations retain UPDATE locks. The ownership record names these narrow grants. Only affected checks will run after the repair merge; no repeat broad gate or paid probe is planned.
+
+## Completed Stage 4 gate
+
+Rebased integration onto repair baseline `fede522`. The purchases owner verified two concurrent shared readers, reran the purchase critical case, and passed all three repaired ingestion tests. After merging that repair, `pnpm --filter @ground/server typecheck` and the two site critical checks passed in this explicit sourcing worktree. Combined with the original successful typechecks/builds and unaffected sourcing/purchase checks, the Stage 4 gate is green. No full check rerun or extra provider probe was performed.
+
+The final integration commit follows this handoff. Current tree remains on the sourcing branch, with no temporary preview files or secret values. FEEDBACK.md is absent. Exa access evidence is reused and its product/price limits are documented above. Live provider invoice extraction, a full authenticated browser journey and Ambiguous read-back remain pending user configuration/later stages.
