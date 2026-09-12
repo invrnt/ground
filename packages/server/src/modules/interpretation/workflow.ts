@@ -5,13 +5,13 @@ import { GroundError, operationProposalSchema, interpretationResultSchema, opera
 import type { PgTransactions } from '../../infra/database';
 import { permissions } from '../../infra/sessions';
 import { ingestionJob,type AuthorizedReplyRouter,type IngestionRepository,type IngestionService,type StoredInput } from '../ingestion';
-import type { OpenAIReportAdapter } from '../../adapters/openai/openai-adapter';
+import type { OpenRouterReportAdapter } from '../../adapters/openrouter/openrouter-adapter';
 import { InterpretationRepository,type InterpretationRecord } from './repository';
 import { assertExtraction,resolveCommand } from './resolve-extraction';
 const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
 export interface QueryPort { answer(context:ActorContext,question:string):Promise<{text:string}>; }
 export class InterpretationWorkflow implements AuthorizedReplyRouter {
- constructor(private readonly deps:{transactions:PgTransactions;repository:InterpretationRepository;intake:IngestionRepository;replies:IngestionService;projects:ProjectRepository;commands:SiteCommandService;queue:JobQueue;files:PrivateFileStore;adapter:OpenAIReportAdapter;purchases?:{list(context:ActorContext,tx?:TransactionContext):Promise<PurchaseList>};queries?:QueryPort}){}
+ constructor(private readonly deps:{transactions:PgTransactions;repository:InterpretationRepository;intake:IngestionRepository;replies:IngestionService;projects:ProjectRepository;commands:SiteCommandService;queue:JobQueue;files:PrivateFileStore;adapter:OpenRouterReportAdapter;purchases?:{list(context:ActorContext,tx?:TransactionContext):Promise<PurchaseList>};queries?:QueryPort}){}
  async transcriptForInput(context:ActorContext,inputId:string,tx?:TransactionContext):Promise<string|null>{if(!tx)return this.deps.transactions.run(current=>this.transcriptForInput(context,inputId,current));await this.deps.projects.snapshot(context,tx);const row=await this.deps.repository.get(inputId,tx);if(row&&(row.project_id!==context.project_id||row.run_id!==context.run_id))throw new GroundError('FORBIDDEN','Transcript access denied');return row?.transcript??null;}
  private async source(id:string,tx:TransactionContext){const input=await this.deps.intake.getInput(id,tx);const actor=await this.deps.intake.authorize(input.message.chat_id,input.message.sender_id,new Date().toISOString(),tx);if(actor.run_id!==input.message.run_id)throw new GroundError('CONFLICT','Input run retired');actor.permissions=permissions(actor.roles);return {input,actor};}
  async process(job:Job):Promise<void>{

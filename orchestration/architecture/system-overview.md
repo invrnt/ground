@@ -1,11 +1,11 @@
 # System overview
 
-Ground holds construction records. OpenAI interprets inputs, Exa finds public material sources, Ambiguous receives an office projection, and CopilotKit presents live state and decisions.
+Ground holds construction records. OpenRouter interprets inputs, Exa finds public material sources, Ambiguous receives an office projection, and CopilotKit presents live state and decisions.
 
 ```mermaid
 flowchart TD
   T[Telegram webhook] --> I[Persisted inbox and private originals]
-  I --> O[OpenAI interpretation]
+  I --> O[OpenRouter interpretation]
   O --> D[Validated domain operations]
   D --> P[(PostgreSQL state, events and outbox)]
   P --> L[AG-UI adapter and CopilotKit]

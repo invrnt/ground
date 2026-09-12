@@ -15,3 +15,5 @@
 | Main run video, live export and provider object links | Pending | Record after configuration; no placeholders count as evidence |
 
 For the final run, retain source message/update IDs, exact code/scenario/model versions, project/run IDs, approval and request IDs, actual provider message ID, Ambiguous object IDs/verified versions, source URLs and capture timestamps. Store secrets separately. Intended evaluator links must preserve private access; no public bearer URLs belong in this repository.
+
+The OpenAI row above is historical evidence. Current transport is OpenRouter; see the [migration handoff](../../../orchestration/execution/handoffs/openrouter.md). No live OpenRouter result has been recorded.

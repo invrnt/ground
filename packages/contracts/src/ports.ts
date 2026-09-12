@@ -15,7 +15,7 @@ export interface DispatchService { dispatch(context: ActorContext, proposal_id: 
 export interface WorkspaceSyncService { sync(context: ActorContext, job: Job): Promise<ExternalObjectLink>; }
 export interface LiveStateService { snapshot(context: ActorContext): Promise<ProjectSnapshot>; events(context: ActorContext, after: number): AsyncIterable<DomainEvent>; }
 export interface TelegramAdapter { getFile(file_id: string): Promise<{ bytes: Uint8Array; content_type: string }>; send(input: { recipient_id: string; text: string; reply_to_message_id?: string }): Promise<{ message_id: string }>; }
-export interface OpenAIAdapter { transcribe(input: { bytes: Uint8Array; filename: string }): Promise<{ text: string; model: string }>; interpret(input: { message: NormalizedMessage; context: ProjectSnapshot }): Promise<InterpretationResult>; }
+export interface ReportInterpretationAdapter { transcribe(input: { bytes: Uint8Array; filename: string }): Promise<{ text: string; model: string }>; interpret(input: { message: NormalizedMessage; context: ProjectSnapshot }): Promise<InterpretationResult>; }
 export interface ExaAdapter { search(query: string): Promise<{ id: string; url: string; title: string | null }[]>; contents(urls: string[]): Promise<{ url: string; text: string; fetched_at: string }[]>; }
 export interface RemoteObject { id: string; url: string; revision: string | null; }
 export interface AmbiguousAdapter {

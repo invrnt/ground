@@ -44,7 +44,7 @@ Open the configured origin and sign in as a provisioned account. `/health/live` 
 | DEMO_PASSWORD_ADMIN/LUIS/ANA/JUAN/PURCHASING | Unique initial account passwords, at least 12 characters |
 | DEMO_MANIFEST_PATH | Private configured manifest copy |
 | TELEGRAM_BOT_TOKEN / TELEGRAM_WEBHOOK_SECRET | Bot credentials and webhook secret |
-| OPENAI_API_KEY / OPENAI_TRANSCRIPTION_MODEL / OPENAI_INTERPRETATION_MODEL | Configured account and supported model names; no model is assumed |
+| OPENROUTER_API_KEY / OPENROUTER_TRANSCRIPTION_MODEL / OPENROUTER_INTERPRETATION_MODEL | Configured account and supported model names; no model is assumed |
 | EXA_API_KEY | Exa account key |
 | AMBIGUOUS_API_TOKEN / AMBIGUOUS_WORKSPACE_ID | Authorized Ambiguous account/workspace |
 | AMBIGUOUS_BASE_URL | Normally `https://app.ambiguous.ai`; official API version is 1 |
@@ -105,3 +105,5 @@ Reset refuses unresolved external writes. Once safe, it fences the old run, canc
 Follow the single [main journey](../../orchestration/testing/critical-journeys.md) once after credentials are ready. Keep the uncut recording. Use the short supporting session for invoice/receipt, correction and recovery. Prior critical checks can supply the controlled uncertainty evidence; do not deliberately create duplicate live messages.
 
 From the admin Operations panel, download the run export. Review it for personal data and intended evaluator scope even though known secrets are redacted. The export endpoint is `/api/projects/:projectId/runs/:runId/export` and requires the authorized admin session. Store the real export and recordings in approved private artifact storage, then update the evidence index with their hashes and authorized evaluator links. Do not replace the labelled local baseline export with an unlabelled fixture.
+
+See the [OpenRouter contract](../../orchestration/api/openrouter.md) for compatible model selection and pending live checks. Configuration alone does not verify access.

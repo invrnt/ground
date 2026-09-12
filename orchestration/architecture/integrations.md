@@ -1,11 +1,11 @@
 # Integration policy
 
-All four sponsors are P0. Build priority is OpenAI and CopilotKit, then Exa and Ambiguous. Probe documentation and available access in Stage 1 before implementation branches depend on them. Repeat only failed or unavailable checks when credentials arrive.
+The user-requested provider migration routes interpretation through OpenRouter. CopilotKit, Exa and Ambiguous retain their roles. Probe documentation and available access in Stage 1 before implementation branches depend on them. Repeat only failed or unavailable checks when credentials arrive.
 
 | Boundary | Input | Output | Authority |
 | --- | --- | --- | --- |
 | Telegram | Authenticated update and private media | Persisted message; bounded reply/send result | Server membership and recipient allowlist |
-| OpenAI | Original text, audio, image/PDF and scoped project context | Transcript, structured proposals, missing fields | No direct mutation or destination control |
+| OpenRouter | Original text, audio, image/PDF and scoped project context | Transcript, structured proposals, missing fields | No direct mutation or destination control |
 | AG-UI/CopilotKit | Committed events and pending checkpoint | Reactive state, tool cards, human response | Backend validates and persists every decision |
 | Exa | Public material specification, city and date need | Pages and source-backed candidates | No private project information in queries |
 | Ambiguous | Typed file/task/report projection | Remote IDs, URLs and verified versions | Preconfigured workspace and mapped users |
@@ -28,7 +28,7 @@ Assumption: use these server-side names in `.env.example` and validate them at s
 | `PUBLIC_APP_URL`, `PORT`, `PRIVATE_STORAGE_PATH` | HTTPS origin, API port and private persistent storage |
 | `SESSION_SECRET` | Server session protection; provision user password hashes through the setup command |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET` | Bot access and authenticated webhook binding |
-| `OPENAI_API_KEY`, `OPENAI_TRANSCRIPTION_MODEL`, `OPENAI_INTERPRETATION_MODEL` | Separate model configuration and server API access |
+| `OPENROUTER_API_KEY`, `OPENROUTER_TRANSCRIPTION_MODEL`, `OPENROUTER_INTERPRETATION_MODEL` | Separate model configuration and server API access |
 | `EXA_API_KEY` | Public supplier research |
 | `AMBIGUOUS_API_BASE_URL`, `AMBIGUOUS_API_TOKEN` | Verified account API host and Bearer credential |
 | `DEMO_MANIFEST_PATH`, `GROUND_MODE` | Scenario configuration; explicit demo versus normal clock behavior |

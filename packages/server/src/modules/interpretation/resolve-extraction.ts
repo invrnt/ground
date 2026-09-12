@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { operationProposalSchema, GroundError, type OperationProposal, type ProjectSnapshot, type Purchase } from '@ground/contracts';
-import type { Extraction } from '../../adapters/openai/extraction';
+import type { Extraction } from '../../adapters/openrouter/extraction';
 const objectSchema=z.record(z.unknown());
 const normalize=(value:string)=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
 type Entity=ProjectSnapshot['work'][number];

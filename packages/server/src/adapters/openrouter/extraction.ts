@@ -6,7 +6,7 @@ export const extractionSchema = z.object({
 }).strict();
 export type Extraction = z.infer<typeof extractionSchema>;
 export const commandShapes = operationProposalSchema.options.map(schema=>({ type:schema.shape.type.value,entity_ids:Object.keys(schema.shape.entity_ids.shape),fields:Object.keys(schema.shape.fields.shape) }));
-export interface ProviderMetadata { model:string; request_id:string|null; duration_ms:number; usage:unknown; cost:null; prompt_version:string; schema_version:number; }
+export interface ProviderMetadata { provider:'openrouter'; upstream_provider:string|null; model:string; request_id:string|null; duration_ms:number; usage:unknown; cost:number|null; prompt_version:string; schema_version:number; }
 export interface ExtractedReport { extraction:Extraction; metadata:ProviderMetadata; }
 export const PROMPT_VERSION='ground-interpretation-v1';
 export const SCHEMA_VERSION=1;

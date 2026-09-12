@@ -2,7 +2,7 @@
 
 ## Product description
 
-Ground turns jobsite voice notes and photos into operational updates. OpenAI interprets the report, Exa researches materials, and Ambiguous keeps the task, evidence and site report together. Supervisors use CopilotKit to inspect the changes and approve the next action. Workers stay in Telegram.
+Ground turns jobsite voice notes and photos into operational updates. OpenRouter interprets the report, Exa researches materials, and Ambiguous keeps the task, evidence and site report together. Supervisors use CopilotKit to inspect the changes and approve the next action. Workers stay in Telegram.
 
 ## Technical description
 

@@ -23,7 +23,7 @@ packages/
     src/
       composition.ts
       infra/            # pg, transactions, sessions, storage and job runner
-      adapters/telegram/ openai/ exa/ ambiguous/
+      adapters/telegram/ openrouter/ exa/ ambiguous/
       modules/
         project/ ingestion/ interpretation/ site/ live/
         purchases/ sourcing/ reporting/ procurement/

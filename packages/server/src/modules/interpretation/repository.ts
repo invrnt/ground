@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { clarificationSchema, normalizedMessageSchema, GroundError, type ActorContext, type Clarification, type TransactionContext } from '@ground/contracts';
 import type { PgTransactions } from '../../infra/database';
 import type { StoredInput } from '../ingestion';
-import { extractionSchema } from '../../adapters/openai/extraction';
+import { extractionSchema } from '../../adapters/openrouter/extraction';
 export const recordSchema=z.object({input_id:z.string().uuid(),project_id:z.string().uuid(),run_id:z.string().uuid(),status:z.enum(['processing','completed','ignored','needs_input','retryable','pending_handler']),transcript:z.string().nullable(),transcript_reference:z.string().uuid().nullable(),result:extractionSchema.nullable(),metadata:z.record(z.unknown()),error:z.string().nullable(),question_count:z.number().int(),answer_text:z.string().nullable()});
 export type InterpretationRecord=z.infer<typeof recordSchema>;
 export class InterpretationRepository {
