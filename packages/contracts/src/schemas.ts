@@ -65,3 +65,5 @@ export type ReportSnapshot=z.infer<typeof reportSnapshotSchema>;
 export const loginInputSchema=z.object({username:z.string().min(1).max(100),password:z.string().min(1).max(1024)}).strict();
 export const sessionSchema=z.object({user:z.object({id:idSchema,username:z.string(),display_name:z.string(),roles:z.array(roleSchema)}).strict(),project_ids:z.array(idSchema),csrf_token:z.string()}).strict();
 export type Session=z.infer<typeof sessionSchema>;
+export const clarificationAnswerInputSchema=z.object({token:z.string().min(1),answer:z.string().min(1).max(1000),expected_version:z.number().int().nonnegative()}).strict();
+export type ClarificationAnswerInput=z.infer<typeof clarificationAnswerInputSchema>;
