@@ -52,3 +52,5 @@ The Orchestrator owns no implementation paths. It can inspect all files and perf
 Do not add an unowned file silently. The S owner assigns it in this table and the affected prompt before work begins. Use the existing feature directory when possible. Changes to documentation never automatically authorize changes outside the user's product scope.
 
 Stage 3 temporary grant from the Orchestrator: site-domain may edit `packages/server/src/modules/project/repository.ts` solely to extend the canonical snapshot with site entities, aliases and computed progress. The prior runtime owner is inactive for this path. No second snapshot implementation is authorized.
+
+Stage 4 temporary grant from the Orchestrator: sourcing may edit `packages/domain/src/quantities.ts` solely to add the canonical alternate-coverage candidate calculation. The prior site-domain owner is inactive. Other domain paths remain read-only.

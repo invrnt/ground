@@ -25,7 +25,7 @@ export const operationProposalSchema = z.discriminatedUnion('type', [
  command('update_assignment',{assignment_id:idSchema},{status:z.enum(['pending','in_progress','completed','cancelled']).optional(),due_at:timestampSchema.optional()}),
  command('resolve_issue',{issue_id:idSchema},{resolution_note:z.string().min(1)}),
  command('correct_operation',{original_operation_id:idSchema},{quantity:positive.optional(),field:z.string().optional(),value:z.string().optional(),reason:z.string().min(1)}),
- command('register_purchase',{}, {issuer:z.string().nullable(),reference:z.string().nullable(),lines:z.array(purchaseLine).min(1),currency:z.literal('COP'),document_hash:z.string().min(1)}),
+ command('register_purchase',{}, {invoice_date:dateSchema.optional(),issuer:z.string().nullable(),reference:z.string().nullable(),lines:z.array(purchaseLine).min(1),currency:z.literal('COP'),document_hash:z.string().min(1)}),
  command('confirm_receipt',{purchase_id:idSchema},{lines:z.array(z.object({line_id:idSchema,quantity:positive}).strict()).min(1)})
 ]);
 export type OperationProposal = z.infer<typeof operationProposalSchema>;
@@ -67,3 +67,17 @@ export const sessionSchema=z.object({user:z.object({id:idSchema,username:z.strin
 export type Session=z.infer<typeof sessionSchema>;
 export const clarificationAnswerInputSchema=z.object({token:z.string().min(1),answer:z.string().min(1).max(1000),expected_version:z.number().int().nonnegative()}).strict();
 export type ClarificationAnswerInput=z.infer<typeof clarificationAnswerInputSchema>;
+export const sourceSnapshotSchema=z.object({id:idSchema,url:z.string().url(),title:z.string().nullable(),retrieved_at:timestampSchema,excerpt:z.string(),provenance:z.enum(['live','cache','fixture'])}).strict();
+export const sourcingRowSchema=z.object({candidate:supplierCandidateSchema,candidate_version:z.number().int(),calculation:candidateCalculationSchema.nullable(),delivery_date:dateSchema.nullable(),delivery_status:z.enum(['meets_date','late','unknown']),known_transport:decimalSchema.nullable(),known_tax:decimalSchema.nullable(),source:sourceSnapshotSchema}).strict();
+export const sourcingComparisonSchema=z.object({need:procurementNeedSchema,status:z.enum(['pending','researching','completed','failed','needs_configuration']),error:z.string().nullable(),specification:z.string(),rows:z.array(sourcingRowSchema).max(3),unresolved_fields:z.array(z.string()),can_view_costs:z.boolean()}).strict();
+export type SourcingComparison=z.infer<typeof sourcingComparisonSchema>;
+export type SourcingRow=z.infer<typeof sourcingRowSchema>;
+export const sourcingSelectionSchema=z.object({id:idSchema,project_id:idSchema,run_id:idSchema,need:procurementNeedSchema,candidate:supplierCandidateSchema.nullable(),candidate_version:z.number().int().nullable(),calculation:candidateCalculationSchema.nullable(),specification:z.string(),unresolved_fields:z.array(z.string()),created_at:timestampSchema}).strict();
+export type SourcingSelection=z.infer<typeof sourcingSelectionSchema>;
+export const queryInputSchema=z.object({text:z.string().min(1).max(500)}).strict();
+export const queryAnswerSchema=z.object({answer:z.string(),version:z.number().int(),date:dateSchema,evidence_ids:z.array(idSchema),source_ids:z.array(idSchema),status:z.enum(['answered','needs_input'])}).strict();
+export type QueryAnswer=z.infer<typeof queryAnswerSchema>;
+export const purchaseSchema=z.object({id:idSchema,project_id:idSchema,run_id:idSchema,issuer:z.string().nullable(),reference:z.string().nullable(),invoice_date:dateSchema.nullable(),currency:z.literal('COP'),total:decimalSchema.nullable(),status:z.enum(['recorded','partially_received','received']),evidence_ids:z.array(idSchema),lines:z.array(z.object({id:idSchema,material_id:idSchema,material_name:z.string(),quantity:decimalSchema,received_quantity:decimalSchema,unit:z.string(),unit_price:decimalSchema.nullable(),total:decimalSchema.nullable()}).strict()),receipts:z.array(z.object({id:idSchema,confirmed_at:timestampSchema,lines:z.array(z.object({line_id:idSchema,quantity:decimalSchema}).strict())}).strict()),version:z.number().int()}).strict();
+export type Purchase=z.infer<typeof purchaseSchema>;
+export const purchaseListSchema=z.object({purchases:z.array(purchaseSchema),can_receive:z.boolean(),can_view_costs:z.boolean()}).strict();
+export type PurchaseList=z.infer<typeof purchaseListSchema>;
