@@ -32,6 +32,12 @@ export function liveModule(
   return {
     name: "live",
     registerRoutes: async (app: FastifyInstance) => {
+      let closing = false;
+      const streams = new Set<() => void>();
+      app.addHook("preClose", async () => {
+        closing = true;
+        for (const close of streams) close();
+      });
       app.get<{ Params: { p: string } }>(
         "/api/projects/:p/snapshot",
         async (request, reply) => {
@@ -64,6 +70,7 @@ export function liveModule(
           const first = await service.state(
             await sessions.context(request, projectId),
           );
+          if (closing) return reply.code(503).send();
           reply.hijack();
           reply.raw.writeHead(200, {
             "Content-Type": "text/event-stream",
@@ -96,10 +103,16 @@ export function liveModule(
               }
             })();
           }, 3000);
-          reply.raw.on("close", () => {
+          const close = () => {
+            if (!active) return;
             active = false;
             clearInterval(timer);
-          });
+            streams.delete(close);
+            const socket = reply.raw.socket;
+            reply.raw.end(() => socket?.end());
+          };
+          streams.add(close);
+          reply.raw.on("close", close);
         },
       );
       async function run(request: FastifyRequest, projectId: string) {

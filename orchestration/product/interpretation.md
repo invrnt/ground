@@ -2,7 +2,7 @@
 
 Owner: `interpretation`. Requirements: RF03, RF05, RF06.
 
-Use separate configured OpenAI transcription and interpretation models. Transcribe audio up to 60 seconds; interpret supplied photos and readable PDFs up to five pages. Each file is at most 10 MB. Keep original media, transcript, extraction status, prompt/schema version, model ID and source references.
+Use separate configured OpenRouter transcription and interpretation models. Transcribe audio up to 60 seconds; interpret supplied photos and readable PDFs up to five pages. Each file is at most 10 MB. Keep original media, transcript, extraction status, prompt/schema version, model ID and source references.
 
 Combine text, audio transcript, linked photo and scoped project context into structured operation proposals. Resolve `baño dos`, material aliases, Juan and local dates against configured entities. Classify a photo as evidence of an observation, not a measurement or technical certification. Ignore irrelevant chat without changing domain state.
 

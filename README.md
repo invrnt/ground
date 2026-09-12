@@ -2,11 +2,33 @@
 
 A construction workspace connecting Telegram reports to project records and reviewed procurement requests. Product requirements are in [PRD.md](PRD.md). The application includes authenticated project records, reviewed procurement, dispatch and admin recovery. Live provider acceptance remains pending configured accounts and credentials.
 
-Use Node 24.21.0 and pnpm 11.24.0. Run `pnpm install`, then `pnpm check`. Copy `.env.example` to `.env` and fill in configuration locally. Scripts read process environment; load your environment through your shell or deployment launcher without printing secrets. Run `DATABASE_URL=... pnpm db:migrate` against your local database. `pnpm dev` starts the API, worker and web development processes. The Vite web server proxies `/api` to port 3000.
+## Run locally
 
-`pnpm demo:preflight` reports database-backed configuration and recovery state without probing providers. Admins can inspect jobs, export current or historical runs, and reset the demo from the workspace. The CLI equivalent is `pnpm demo:reset <run-id> "RESET <run-id>"`; unresolved writes must be reconciled first.
+Install Node 24.21.0, pnpm 11.24.0 and Docker Engine/Desktop with Compose. Docker must be running and accessible to your user. From the repository root:
 
-Compose defines PostgreSQL plus an API and worker with private persistent storage. Set `POSTGRES_PASSWORD`, run migrations before starting application services, and attach an existing HTTPS reverse proxy to localhost port 3000. No deployment host is configured yet. Provider secrets remain server-side.
+```sh
+pnpm run setup
+pnpm start
+```
+
+Use `pnpm run setup` explicitly to select this project's setup script rather than pnpm's own setup command. Setup builds the existing Compose images, starts PostgreSQL, and runs the canonical migration, configuration and seed commands. If `.env` does not exist, it creates a private file with generated local passwords and a session secret. Existing `.env` values are never changed; missing required names are reported. Read `DEMO_PASSWORD_ADMIN` in that file locally to sign in as `admin`. Provider keys may be added later; local startup does not verify their access.
+
+`pnpm start` builds and starts the web/API, worker and database, waits for API/worker health, then prints the login URL. The default is `http://localhost:3000/login`. The web UI is served by the API container, so a separate Vite process is unnecessary. For a different local port, change both `PORT` and `PUBLIC_BASE_URL` in `.env`.
+
+```sh
+pnpm restart  # Apply .env changes to API and worker together
+pnpm stop     # Stop services and preserve database/private files
+```
+
+Restart stops both application services before recreating them with the current environment. Active worker work can finish before its database pool closes; open event streams close on API shutdown. Docker allows up to five minutes before forcing termination. Database and private-file volumes are preserved. No command resets the demo or removes volumes. Run setup again after schema changes; it preserves the active scenario and stock, but reapplies configured project/member settings. Setup stops API and worker before migrations. Do not change `POSTGRES_PASSWORD` on an already initialized database without separately rotating the database password.
+
+Set `AI_PROVIDER=openrouter` or `AI_PROVIDER=vercel` in `.env`, configure that provider's key and separate transcription/interpretation models, then run `pnpm restart`. OpenRouter remains the default. Vercel transcription is beta and requires account access. See the [report provider contract](orchestration/api/openrouter.md). After changing application code, use `pnpm start` to rebuild images; restart alone reuses the built images.
+
+For Docker diagnostics use `docker compose ps` and local service logs. Avoid printing resolved Compose configuration or sharing logs containing private content. Telegram webhooks require a reachable HTTPS origin and configured accounts; the default local URL is for local inspection. Custom `DEMO_MANIFEST_PATH` must identify a file included in the image, such as `/app/demo/manifest.json`; private host files are not mounted automatically.
+
+For development without the Compose launcher, run `pnpm install` and `pnpm dev`. Those commands require your own configured PostgreSQL and process environment; Vite proxies `/api` to port 3000. `pnpm check` runs the local code checks.
+
+`pnpm demo:preflight` reports database-backed configuration and recovery state without probing providers. Inside Compose, use `docker compose run --rm --no-deps api pnpm demo:preflight`. Admins can inspect jobs, export current or historical runs, and reset the demo explicitly from the workspace. Reset remains separate from setup/start/restart/stop.
 
 ## SDK probe
 

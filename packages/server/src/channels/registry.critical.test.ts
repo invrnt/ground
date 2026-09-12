@@ -50,35 +50,60 @@ function runtime(provider: 'telegram' | 'slack', bot_id: string, log: string[]):
     dispatch: { handle: async () => { log.push(`dispatch:${provider}`); }, followup: async () => { log.push(`followup:${provider}`); } } as unknown as ChannelRuntime['dispatch'],
   };
 }
+const owner = (provider: 'telegram' | 'slack' | null) => ({ providerOf: async () => provider });
+const JOB = { kind: 'dispatch_request', payload: { subject_id: 'p1', expected_version: 1 } } as never;
 
 describe('channel router', () => {
   it('sends a reply back through the channel the input arrived on', async () => {
     const log: string[] = [];
-    const router = new ChannelRouter([runtime('telegram', '801', log), runtime('slack', 'U0C1GH9N49F', log)]);
+    const router = new ChannelRouter([runtime('telegram', '801', log), runtime('slack', 'U0C1GH9N49F', log)], owner('slack'));
     const input = { bot_id: 'U0C1GH9N49F', provider: 'slack' } as never;
     expect(router.forInput(input).provider).toBe('slack');
     await expect(router.enqueueReply(input, 'hola', {} as never)).resolves.toBe('reply:slack');
   });
 
   it('refuses to guess when no channel owns the bot that received the input', () => {
-    const router = new ChannelRouter([runtime('telegram', '801', [])]);
+    const router = new ChannelRouter([runtime('telegram', '801', [])], owner('telegram'));
     expect(() => router.forInput({ bot_id: 'U-unknown', provider: 'slack' } as never)).toThrow(/No channel is configured for bot/);
   });
 
   it('refuses to register the same provider twice', () => {
     const log: string[] = [];
-    expect(() => new ChannelRouter([runtime('slack', 'U1', log), runtime('slack', 'U2', log)])).toThrow(/registered twice/);
+    expect(() => new ChannelRouter([runtime('slack', 'U1', log), runtime('slack', 'U2', log)], owner('slack'))).toThrow(/registered twice/);
   });
 
-  it('offers a job to every channel, so the owner claims it and the others ignore it', async () => {
+  it('runs a job only on its owning channel, never on the other one', async () => {
     const log: string[] = [];
-    const router = new ChannelRouter([runtime('telegram', '801', log), runtime('slack', 'U0C1GH9N49F', log)]);
-    await router.handleDispatchJob({} as never);
-    expect(log).toEqual(['dispatch:telegram', 'dispatch:slack']);
+    const router = new ChannelRouter([runtime('telegram', '801', log), runtime('slack', 'U0C1GH9N49F', log)], owner('slack'));
+    await router.handleDispatchJob(JOB);
+    expect(log).toEqual(['dispatch:slack']);
+  });
+
+  it('leaves a job pending, retryable, when its channel is switched off', async () => {
+    const log: string[] = [];
+    /** Telegram alone is running; the job belongs to Slack. */
+    const router = new ChannelRouter([runtime('telegram', '801', log)], owner('slack'));
+    await expect(router.handleDispatchJob(JOB)).rejects.toMatchObject({ retryable: true });
+    expect(log).toEqual([]);
+  });
+
+  it('does not fail a job whose row has gone', async () => {
+    const log: string[] = [];
+    const router = new ChannelRouter([runtime('telegram', '801', log)], owner(null));
+    await expect(router.handleDispatchJob(JOB)).resolves.toBeUndefined();
+    expect(log).toEqual([]);
+  });
+
+  it('routes reply and follow-up jobs by the same ownership rule', async () => {
+    const log: string[] = [];
+    const router = new ChannelRouter([runtime('telegram', '801', log), runtime('slack', 'U1', log)], owner('telegram'));
+    await router.handleIngestionJob(JOB);
+    await router.handleFollowupJob(JOB);
+    expect(log).toEqual(['ingestion:telegram', 'followup:telegram']);
   });
 
   it('reports exactly the providers it was built with', () => {
-    const router = new ChannelRouter([runtime('slack', 'U1', [])]);
+    const router = new ChannelRouter([runtime('slack', 'U1', [])], owner('slack'));
     expect(router.providers).toEqual(['slack']);
     expect(router.has('slack')).toBe(true);
     expect(router.has('telegram')).toBe(false);

@@ -8,7 +8,21 @@ export async function configureDemo(transactions:PgTransactions,input:DemoManife
  const manifest=manifestSchema.parse(input); const hashes=new Map<string,string>(); for(const member of manifest.members) { const password=passwords[member.username]; if(password)hashes.set(member.username,await hashPassword(password)); }
  await transactions.run(async tx=> { const db=transactions.client(tx); await db.query('INSERT INTO projects(id,name,configuration) VALUES($1,$2,$3) ON CONFLICT(id) DO UPDATE SET configuration=excluded.configuration',[demoProjectId,manifest.project_name,manifest]);
  for(const member of manifest.members) { const existing=await db.query('SELECT 1 FROM members WHERE username=$1',[member.username]); const hash=hashes.get(member.username); if(!existing.rowCount&&!hash)throw new Error(`DEMO_PASSWORD_${member.username.toUpperCase()} is required for provisioning`); await db.query('INSERT INTO members(id,project_id,username,display_name,password_hash,roles,telegram_sender_id,remote_user_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(username) DO UPDATE SET display_name=excluded.display_name,roles=excluded.roles,telegram_sender_id=excluded.telegram_sender_id,remote_user_id=excluded.remote_user_id,password_hash=COALESCE($9,members.password_hash)',[randomUUID(),demoProjectId,member.username,member.name,hash??'',member.roles,member.telegram_sender_id,member.remote_user_id,hash??null]); }
- await db.query('DELETE FROM channel_bindings WHERE project_id=$1 AND chat_id IS DISTINCT FROM $2',[demoProjectId,manifest.telegram_chat_id]); if(manifest.telegram_chat_id)await db.query('INSERT INTO channel_bindings(chat_id,project_id) VALUES($1,$2) ON CONFLICT(chat_id) DO UPDATE SET project_id=excluded.project_id',[manifest.telegram_chat_id,demoProjectId]); }); return configurationProblems(manifest);
+ for(const member of manifest.members) {
+  const row=(await db.query<{id:string}>('SELECT id FROM members WHERE username=$1',[member.username])).rows[0];
+  if(!row)continue;
+  /** One identity per member per provider; a null id removes the member from that channel. */
+  for(const [provider,external] of [['telegram',member.telegram_sender_id],['slack',member.slack_user_id??null]] as const) {
+   if(external)await db.query("INSERT INTO member_channel_identities(project_id,member_id,provider,external_id) VALUES($1,$2,$3,$4) ON CONFLICT(member_id,provider) DO UPDATE SET external_id=excluded.external_id,project_id=excluded.project_id",[demoProjectId,row.id,provider,external]);
+   else await db.query('DELETE FROM member_channel_identities WHERE member_id=$1 AND provider=$2',[row.id,provider]);
+  }
+ }
+ await db.query("DELETE FROM channel_bindings WHERE project_id=$1 AND provider='telegram' AND chat_id IS DISTINCT FROM $2",[demoProjectId,manifest.telegram_chat_id]); if(manifest.telegram_chat_id)await db.query("INSERT INTO channel_bindings(provider,chat_id,project_id) VALUES('telegram',$1,$2) "+
+  "ON CONFLICT(provider,chat_id) DO UPDATE SET project_id=excluded.project_id",[manifest.telegram_chat_id,demoProjectId]);
+ /** Slack binding and identities are optional, so a Telegram-only manifest still seeds. */
+ await db.query("DELETE FROM channel_bindings WHERE project_id=$1 AND provider='slack' AND chat_id IS DISTINCT FROM $2",[demoProjectId,manifest.slack_channel_id??null]);
+ if(manifest.slack_channel_id)await db.query("INSERT INTO channel_bindings(provider,chat_id,project_id) VALUES('slack',$1,$2) "+
+  "ON CONFLICT(provider,chat_id) DO UPDATE SET project_id=excluded.project_id",[manifest.slack_channel_id,demoProjectId]); }); return configurationProblems(manifest);
 }
 export async function seedDemo(transactions:PgTransactions,input:DemoManifest,tx?:TransactionContext):Promise<string> { if(!tx)return transactions.run(current=>seedDemo(transactions,input,current));const manifest=manifestSchema.parse(input); const db=transactions.client(tx); await db.query('SELECT id FROM projects WHERE id=$1 FOR UPDATE',[demoProjectId]); const existing=await db.query<{id:string}>("SELECT id FROM scenario_runs WHERE project_id=$1 AND status='active'",[demoProjectId]); if(existing.rows[0])return existing.rows[0].id;
  const runId=randomUUID(); await db.query("INSERT INTO scenario_runs(id,project_id,status,scenario_version,scenario_date) VALUES($1,$2,'active',$3,$4)",[runId,demoProjectId,manifest.scenario_version,manifest.scenario_date]);

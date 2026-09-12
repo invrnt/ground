@@ -2,6 +2,7 @@ import { GroundError, type ActorContext, type Job, type TransactionContext } fro
 import type { IngestionService, StoredInput } from '../modules/ingestion';
 import type { DispatchService } from '../modules/dispatch';
 import type { ChannelDefinition, ChannelProvider } from './registry';
+import type { ChannelOwnership } from './ownership';
 
 /** A channel and the two services bound to its adapter for the life of the process. */
 export interface ChannelRuntime extends ChannelDefinition { readonly ingestion: IngestionService; readonly dispatch: DispatchService }
@@ -9,15 +10,15 @@ export interface ChannelRuntime extends ChannelDefinition { readonly ingestion: 
 /**
  * Sends work to the channel that owns it.
  *
- * Every persisted row records the provider that created it, so the owner of a job is a
- * property of the data rather than of whichever channel happens to be configured now.
- * A job whose provider is no longer running is left alone instead of being sent through
- * the wrong adapter, which would deliver a supplier request to the wrong workspace.
+ * Ownership is read from the row the job points at, not from whichever channels happen to
+ * be enabled now. A job belonging to a channel that is switched off is left pending: it is
+ * neither delivered through another provider's adapter, which would reach the wrong
+ * workspace, nor quietly marked done, which would lose it when the channel comes back.
  */
 export class ChannelRouter {
   private readonly byProvider = new Map<ChannelProvider, ChannelRuntime>();
   private readonly byBotId = new Map<string, ChannelRuntime>();
-  constructor(runtimes: readonly ChannelRuntime[]) {
+  constructor(runtimes: readonly ChannelRuntime[], private readonly ownership: ChannelOwnership) {
     for (const runtime of runtimes) {
       if (this.byProvider.has(runtime.provider)) throw new GroundError('NOT_READY', `Channel ${runtime.provider} is registered twice`);
       this.byProvider.set(runtime.provider, runtime);
@@ -27,7 +28,6 @@ export class ChannelRouter {
   get channels(): readonly ChannelRuntime[] { return [...this.byProvider.values()]; }
   get providers(): readonly ChannelProvider[] { return [...this.byProvider.keys()]; }
   has(provider: ChannelProvider): boolean { return this.byProvider.has(provider); }
-  /** The channel that owns a stored input, identified by the bot that received it. */
   forInput(input: StoredInput): ChannelRuntime {
     const runtime = this.byBotId.get(input.bot_id);
     if (!runtime) throw new GroundError('NOT_READY', `No channel is configured for bot ${input.bot_id}`);
@@ -39,10 +39,7 @@ export class ChannelRouter {
     return runtime;
   }
 
-  /**
-   * Reply facade. Interpretation holds one of these and never learns which channel an
-   * input came from; the input carries that itself.
-   */
+  /** Reply facade. Interpretation holds one of these; the input says which channel it came from. */
   enqueueReply(input: StoredInput, text: string, tx: TransactionContext, callback_query_id: string | null = null): Promise<string> {
     return this.forInput(input).ingestion.enqueueReply(input, text, tx, callback_query_id);
   }
@@ -57,10 +54,17 @@ export class ChannelRouter {
   }
 
   /**
-   * Job handlers. Each service only claims rows stamped with its own provider, so running
-   * every channel's handler is safe and a job is processed exactly once, by its owner.
+   * Resolves the owning channel and runs the job there. A retryable error keeps the job
+   * pending for a provider that is not running; a row that has vanished is not an error.
    */
-  async handleIngestionJob(job: Job): Promise<void> { await Promise.all(this.channels.map(runtime => runtime.ingestion.handleJob(job))); }
-  async handleDispatchJob(job: Job): Promise<void> { await Promise.all(this.channels.map(runtime => runtime.dispatch.handle(job))); }
-  async handleFollowupJob(job: Job): Promise<void> { await Promise.all(this.channels.map(runtime => runtime.dispatch.followup(job))); }
+  private async run(job: Job, work: (runtime: ChannelRuntime) => Promise<void>): Promise<void> {
+    const provider = await this.ownership.providerOf(job);
+    if (!provider) return;
+    const runtime = this.byProvider.get(provider);
+    if (!runtime) throw new GroundError('NOT_READY', `Channel ${provider} owns this job but is not running`, true);
+    await work(runtime);
+  }
+  handleIngestionJob(job: Job): Promise<void> { return this.run(job, runtime => runtime.ingestion.handleJob(job)); }
+  handleDispatchJob(job: Job): Promise<void> { return this.run(job, runtime => runtime.dispatch.handle(job)); }
+  handleFollowupJob(job: Job): Promise<void> { return this.run(job, runtime => runtime.dispatch.followup(job)); }
 }

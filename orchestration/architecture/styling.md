@@ -8,4 +8,4 @@ The four named cards are `StateChangeCard`, `IssueCard`, `SupplierComparisonCard
 
 The recording target is 1920 by 1080 with visible text at least 24 px after framing. Use focused zoom or a demo display mode for that target; do not make every desktop metadata label 24 px. At narrow widths, collapse into one column, retain keyboard access and avoid horizontal form scrolling.
 
-Show OpenAI beside extraction, Exa beside sourced candidates, Ambiguous beside remote task/report links and CopilotKit beside the decision. Sponsor names are textual attribution. Reserve most space for project facts. No invented charts, photography, logos or animations are required.
+Show OpenRouter beside extraction, Exa beside sourced candidates, Ambiguous beside remote task/report links and CopilotKit beside the decision. Sponsor names are textual attribution. Reserve most space for project facts. No invented charts, photography, logos or animations are required.

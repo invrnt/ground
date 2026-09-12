@@ -1,11 +1,11 @@
 import { notReady, toolNames, type ActorContext, type ToolName, type Job, type SiteCommandService, type TransactionContext, type ExternalObjectLink } from '@ground/contracts';
 import { createPool, PgTransactions, PgJobQueue, LocalPrivateFiles, Sessions } from './infra';
 import { projectModule, PgProjectRepository } from './modules/project';
-import { loadChannels, ChannelRouter, channelsModule, type ChannelRuntime } from './channels';
+import { loadChannels, ChannelRouter, PgChannelOwnership, channelsModule, type ChannelRuntime } from './channels';
 import { IngestionService, PgIngestionRepository } from './modules/ingestion';
 import { SiteService, siteModule, type ProposalInvalidation } from './modules/site';
 import { InterpretationWorkflow, InterpretationRepository, interpretationModule } from './modules/interpretation';
-import { OpenAIReportAdapter } from './adapters/openai';
+import { ReportProviderAdapter, reportProviderConfiguration } from './adapters/report-provider';
 import { LiveService, liveModule } from './modules/live';
 import { ExaClient } from './adapters/exa';
 import { SourcingService, sourcingModule } from './modules/sourcing';
@@ -51,17 +51,19 @@ export function createComposition(): Composition {
   const delivery=new DispatchService({transactions:runtime.transactions,queue:runtime.queue,authorization:{authorizedDispatch:(context,id,version,tx)=>procurement?procurement.authorizedDispatch(context,id,version,tx):Promise.reject(new Error('Procurement is not registered'))},adapter:definition.adapter,bot_id:definition.bot_id,provider:definition.provider,files:runtime.files,public_base_url:runtime.sessions.origin});
   return {...definition,ingestion,dispatch:delivery};
  });
- const channels=new ChannelRouter(runtimes);
+ const channels=new ChannelRouter(runtimes,new PgChannelOwnership(runtime.transactions));
  modules.push(channelsModule(channels));
  const primary=runtimes[0];
  if(primary){
   dispatch=primary.dispatch;
-  modules.push(dispatchModule(primary.dispatch,runtime.sessions));
-  const apiKey=process.env['OPENAI_API_KEY'],transcriptionModel=process.env['OPENAI_TRANSCRIPTION_MODEL'],interpretationModel=process.env['OPENAI_INTERPRETATION_MODEL'];
-  if(apiKey&&transcriptionModel&&interpretationModel){
-   const ffmpegPath=process.env['FFMPEG_PATH'];
-   const openai=new OpenAIReportAdapter({api_key:apiKey,transcription_model:transcriptionModel,interpretation_model:interpretationModel,...(ffmpegPath?{ffmpeg_path:ffmpegPath}:{})},runtime.files);
-   workflow=new InterpretationWorkflow({transactions:runtime.transactions,repository:new InterpretationRepository(runtime.transactions),intake:repository,replies:channels,projects:runtime.projects,commands,purchases,queries:reporting,queue:runtime.queue,files:runtime.files,adapter:openai});
+  /** The router owns every channel job; this module contributes only its HTTP routes, or
+      its handlers would overwrite the router's and strand the other channels' work. */
+  const {jobs:_channelJobsOwnedByRouter,...dispatchRoutes}=dispatchModule(primary.dispatch,runtime.sessions);
+  modules.push(dispatchRoutes);
+  const {config}=reportProviderConfiguration();
+  if(config) {
+   const reportProvider=new ReportProviderAdapter(config,runtime.files);
+   workflow=new InterpretationWorkflow({transactions:runtime.transactions,repository:new InterpretationRepository(runtime.transactions),intake:repository,replies:channels,projects:runtime.projects,commands,purchases,queries:reporting,queue:runtime.queue,files:runtime.files,adapter:reportProvider});
    modules.push(interpretationModule(workflow,runtime.sessions));
   }
  }

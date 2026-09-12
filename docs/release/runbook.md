@@ -1,5 +1,8 @@
 # Install, run and recover
 
+For local setup, use `pnpm run setup`, then `pnpm start`; see the [quick-start guide](../../README.md#run-locally). `pnpm restart` stops and recreates API plus worker to load `.env` changes. `pnpm stop` retains volumes. Provider keys may remain pending while inspecting the local app. Docker daemon access is required; local script checks do not prove a Docker deployment or live integration.
+
+
 ## Local setup
 
 Use Node 24.21.0, pnpm 11.24.0, PostgreSQL 18.4 and ffmpeg. The lockfile pins all package versions. The release gate ran on host Node 26.7.0; the pinned Node 24 Docker image has not been executed in this environment.
@@ -44,7 +47,9 @@ Open the configured origin and sign in as a provisioned account. `/health/live` 
 | DEMO_PASSWORD_ADMIN/LUIS/ANA/JUAN/PURCHASING | Unique initial account passwords, at least 12 characters |
 | DEMO_MANIFEST_PATH | Private configured manifest copy |
 | TELEGRAM_BOT_TOKEN / TELEGRAM_WEBHOOK_SECRET | Bot credentials and webhook secret |
-| OPENAI_API_KEY / OPENAI_TRANSCRIPTION_MODEL / OPENAI_INTERPRETATION_MODEL | Configured account and supported model names; no model is assumed |
+| AI_PROVIDER | `openrouter` by default, or `vercel`; restart API and worker together |
+| OPENROUTER_API_KEY / OPENROUTER_TRANSCRIPTION_MODEL / OPENROUTER_INTERPRETATION_MODEL | Required only for OpenRouter; no model is assumed |
+| AI_GATEWAY_API_KEY / AI_GATEWAY_TRANSCRIPTION_MODEL / AI_GATEWAY_INTERPRETATION_MODEL | Required only for Vercel; transcription beta account access must be checked |
 | EXA_API_KEY | Exa account key |
 | AMBIGUOUS_API_TOKEN / AMBIGUOUS_WORKSPACE_ID | Authorized Ambiguous account/workspace |
 | AMBIGUOUS_BASE_URL | Normally `https://app.ambiguous.ai`; official API version is 1 |
@@ -105,3 +110,5 @@ Reset refuses unresolved external writes. Once safe, it fences the old run, canc
 Follow the single [main journey](../../orchestration/testing/critical-journeys.md) once after credentials are ready. Keep the uncut recording. Use the short supporting session for invoice/receipt, correction and recovery. Prior critical checks can supply the controlled uncertainty evidence; do not deliberately create duplicate live messages.
 
 From the admin Operations panel, download the run export. Review it for personal data and intended evaluator scope even though known secrets are redacted. The export endpoint is `/api/projects/:projectId/runs/:runId/export` and requires the authorized admin session. Store the real export and recordings in approved private artifact storage, then update the evidence index with their hashes and authorized evaluator links. Do not replace the labelled local baseline export with an unlabelled fixture.
+
+See the [report provider contract](../../orchestration/api/openrouter.md) for compatible model selection and pending live checks. Configuration alone does not verify access.
