@@ -27,3 +27,11 @@ Live audio/photo and provider calls remain pending credentials under the user's 
 ## Versions and configuration
 
 Reused decimal.js 10.6.0. Verified its official `clone`, exact arithmetic, `ceil` and `toFixed` APIs; private precision is 40 significant digits. PostgreSQL transaction/locking findings from runtime remain applicable. Added OpenAI 7.15.0 at interpretation owner's verified request, existing AG-UI 0.0.59 direct server dependencies and existing CopilotKit core 1.71.1/Zod 3.25.76 web dependencies. Docker installs ffmpeg for bounded audio conversion. New optional configuration name `FFMPEG_PATH`; no values or provider credentials recorded.
+
+## Stage 3 integration
+
+Merged peer baseline `51e10cb` on `codex/ground-delivery`. This integration commit registers SiteService routes and canonical read tools, InterpretationWorkflow through intake's authorized reply closure, and LiveService with site history and persisted transcript enrichment. Provider-dependent handlers register when their required configuration exists; pending configuration leaves jobs stored and visible rather than calling a fake adapter. The app now renders LiveWorkspace through AuthBoundary. Project/evidence paths serve the SPA on reload. The foundation probe remains an isolated development executable and is not registered in product composition.
+
+`TEST_DATABASE_URL=... pnpm check` passed once on the combined stage: all workspace typechecks and builds, plus five critical tests across intake and site, including isolated PostgreSQL cases. Vite reports SDK chunks above 500 kB. This is a build warning, not a failed check; no performance campaign or unrelated bundle refactor was added.
+
+Reused interpretation's bounded ffmpeg/SDK/PostgreSQL report-path observation and live workspace's two-client/checkpoint protocol observation. Did not repeat them. No new full browser walkthrough was practical with the unprovisioned shared demo accounts and prior extension interruption; successful two-browser visual acceptance remains unclaimed. Real Telegram/OpenAI extraction remains pending credentials under the user's explicit override. FEEDBACK.md remains absent. Stage 3 gate is green with those live checks explicitly pending.
