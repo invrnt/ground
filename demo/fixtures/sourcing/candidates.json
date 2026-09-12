@@ -1,0 +1,5 @@
+[
+ {"label":"A","price":"55000","transport":"30000","tax":null,"coverage":"1.26","unit":"box","compatibility":"compatible","delivery_date":"2026-09-13"},
+ {"label":"B","price":"53000","transport":"20000","tax":null,"coverage":"1.26","unit":"box","compatibility":"compatible","delivery_date":"2026-09-15"},
+ {"label":"C","price":"52000","transport":"25000","tax":null,"coverage":"1.26","unit":"box","compatibility":"needs_review","delivery_date":"2026-09-13"}
+]
