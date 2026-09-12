@@ -28,3 +28,11 @@ Inspected a clearly labeled synthetic approval-card preview in Chrome: full Span
 ## Versions and configuration
 
 Reused Node crypto HMAC-SHA256/timing-safe token comparison, existing schemas, exact domain money functions and pinned CopilotKit/AG-UI APIs. No dependency upgrades or new provider APIs. Uses existing SESSION_SECRET and configured demo manifest fields, with no credentials recorded. Narrow grants for the canonical snapshot, sourcing selection and live resume bridge are recorded in ownership.md. FEEDBACK.md absent; parent reported no PR feedback. Office live resource checks remain pending account credentials per the user's timing override.
+
+## Stage 5 integration
+
+Merged office baseline `547a91a`. Composition injects procurement invalidation into the canonical SiteService before any command runs, and supplies one DecisionTransport to live routes. The frontend's memoized decision renderer receives the authenticated project and CSRF token from the session, not tool arguments. Sourcing and procurement panels render inside the workspace content slot; the real human-in-the-loop hook remains the approval path.
+
+OfficeRepository's scoped links reader enriches the canonical snapshot and reports, including existing links when credentials are absent. With actual token/workspace configured, the real Ambiguous client and office job handlers register once. Otherwise jobs stay unclaimed in the explicit office configuration-pending state. Native date-only task semantics and managed-block/account read-back limitations remain in the office handoff.
+
+One combined `TEST_DATABASE_URL=... pnpm check` passed all package typechecks/builds and all 12 critical tests across six files. No repeat provider probe, full browser journey or external write was performed. The existing SDK chunk-size warning remains. FEEDBACK.md is absent. README records stable SESSION_SECRET and the quotation-versus-purchase distinction. Stage 5 gate is green under the user's credential timing override; real office resource read-back and eventual message delivery remain unclaimed.
