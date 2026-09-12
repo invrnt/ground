@@ -1,6 +1,6 @@
 # Easy-run handoff
 
-Base: `74e2ba3`, clean at task start. Implementation commit: `0e92f16`. Branch: `codex/ground-easy-run`. Worktree: `/home/jc/dev/hackathons/ground-worktrees/easy-run`. Integration and final GitHub feedback review are pending the Orchestrator.
+Base: `74e2ba3`, clean at task start. Implementation commit: `0e92f16`. Branch: `codex/ground-easy-run`. Worktree: `/home/jc/dev/hackathons/ground-worktrees/easy-run`. The Orchestrator merged through `bed3620` onto main; final integration and feedback status are recorded below.
 
 ## Delivered
 
@@ -29,3 +29,10 @@ No dependency/version updates or lockfile changes. Existing pinned Node containe
 ## Limits
 
 Docker image build, actual Compose startup, provisioning against container PostgreSQL, volume ownership and container signal delivery remain unverified due daemon access. The local process/signal checks are not Docker deployment evidence. After five minutes Docker may force termination; existing uncertain-job recovery semantics remain in effect. Normal keep-alive requests may take additional time to drain. Live providers, Telegram HTTPS reachability, eligibility, recording and final submission remain pending. Custom manifest files must be included in the image at the configured container path; private host paths are not mounted automatically. Existing initialized database passwords must be rotated separately rather than changed only in .env.
+
+
+## Final integration and feedback
+
+The Orchestrator confirmed merge through `bed3620` onto main and a successful post-integration review of the configured repository [invrnt/ground](https://github.com/invrnt/ground). Its all-state PR query, limit 20, returned no PRs, leaving no descriptions, reviews, comments or diffs to assess and no actionable feedback to apply or defer. This records the Orchestrator's review rather than a duplicate query by the implementation agent. FEEDBACK.md remained absent.
+
+This worktree rebased onto main cleanly. Only this handoff was updated, with no further tests as requested. The Docker daemon and live-provider limitations above remain unchanged; this integration does not claim final hackathon submission readiness.
