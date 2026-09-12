@@ -1,0 +1,34 @@
+:root {
+  --g-background: #f4f5f1;
+  --g-card: #fff;
+  --g-text: #17211b;
+  --g-muted: #536057;
+  --g-border: #d5dcd4;
+  --g-primary: #245c3b;
+  --g-warning: #7a4b00;
+  --g-warning-bg: #fff4d9;
+  --g-error: #a12727;
+  --g-error-bg: #fff0ee;
+  --g-space-1: 4px;
+  --g-space-2: 8px;
+  --g-space-3: 12px;
+  --g-space-4: 16px;
+  --g-space-6: 24px;
+  --g-space-8: 32px;
+  --g-space-12: 48px;
+  --g-radius: 12px;
+  --g-input-radius: 8px;
+  --g-content-width: 1440px;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: var(--g-text);
+  background: var(--g-background);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
