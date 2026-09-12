@@ -1,8 +1,8 @@
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
-import {GroundError,normalizedMessageSchema,actorContextSchema,outboundRequestSchema,requestDetailSchema,requestListSchema,reconcileRequestInputSchema,type ActorContext,type Job,type JobQueue,type PrivateFileStore,type OutboundRequest,type TransactionContext,type RequestDetail} from '@ground/contracts';
+import {GroundError,normalizedMessageSchema,actorContextSchema,outboundRequestSchema,requestDetailSchema,requestListSchema,reconcileRequestInputSchema,type ActorContext,type Job,type JobQueue,type PrivateFileStore,type OutboundRequest,type TransactionContext,type RequestDetail,type ChannelAdapter} from '@ground/contracts';
 import {PgTransactions,systemClock,type Clock} from '../../infra/database';
-import type {BotTelegramAdapter} from '../../adapters/telegram';
+
 import type {ProcurementService} from '../procurement';
 const iso=(value:unknown)=>value instanceof Date?value.toISOString():value;
 const configuration=z.object({test_recipient_id:z.string().nullable(),test_recipient_reachable:z.boolean(),reminder_delay_seconds:z.number().int().positive()});
@@ -12,7 +12,7 @@ const parseRequest=(row:Record<string,unknown>)=>requestRow.parse({...row,attemp
 function outbound(row:RequestRow):OutboundRequest{return outboundRequestSchema.parse(Object.fromEntries(Object.keys(outboundRequestSchema.shape).map(key=>[key,row[key]])));}
 export class DispatchService {
  private readonly clock:Clock;
- constructor(private readonly deps:{transactions:PgTransactions;queue:JobQueue;authorization:Pick<ProcurementService,'authorizedDispatch'>;adapter:BotTelegramAdapter;bot_id:string;files:PrivateFileStore;clock?:Clock;public_base_url:string}){this.clock=deps.clock??systemClock;}
+ constructor(private readonly deps:{transactions:PgTransactions;queue:JobQueue;authorization:Pick<ProcurementService,'authorizedDispatch'>;adapter:ChannelAdapter;bot_id:string;files:PrivateFileStore;clock?:Clock;public_base_url:string}){this.clock=deps.clock??systemClock;}
  private async scope(context:ActorContext,tx:TransactionContext,resetting=false,lock:'SHARE'|'UPDATE'='UPDATE'){const db=this.deps.transactions.client(tx);const row=(await db.query<{status:string}>(`SELECT status FROM scenario_runs WHERE id=$1 AND project_id=$2 FOR ${lock}`,[context.run_id,context.project_id])).rows[0];if(!row||!['active',...(resetting?['resetting']:[])].includes(row.status))throw new GroundError('CONFLICT','Request belongs to an inactive run');await db.query(`SELECT id FROM projects WHERE id=$1 FOR ${lock}`,[context.project_id]);const member=(await db.query<{roles:unknown}>('SELECT roles FROM members WHERE id=$1 AND project_id=$2',[context.actor_id,context.project_id])).rows[0];if(!member)throw new GroundError('FORBIDDEN','Project membership required');return {...context,roles:actorContextSchema.shape.roles.parse(member.roles)};}
  private async row(project:string,run:string,proposal:string,version:number,tx:TransactionContext):Promise<RequestRow>{const row=(await this.deps.transactions.client(tx).query<Record<string,unknown>>('SELECT * FROM outbound_requests WHERE project_id=$1 AND run_id=$2 AND proposal_id=$3 AND proposal_version=$4 FOR UPDATE',[project,run,proposal,version])).rows[0];if(!row)throw new GroundError('NOT_FOUND','Approved request not found');return parseRequest(row);}
  async dispatch(context:ActorContext,proposal:string,version:number):Promise<OutboundRequest>{

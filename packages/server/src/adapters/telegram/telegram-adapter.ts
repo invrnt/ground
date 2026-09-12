@@ -1,21 +1,20 @@
 import { timingSafeEqual, randomUUID, createHash } from 'node:crypto';
 import { z } from 'zod';
-import { GroundError, normalizedMessageSchema, type NormalizedMessage, type TelegramAdapter } from '@ground/contracts';
+import { GroundError, normalizedMessageSchema, type ChannelAdapter, type ChannelBinding, type ConfirmedSend, type IncomingUpdate, type NormalizedMessage, type TelegramAdapter } from '@ground/contracts';
 
 const integer = z.number().int().safe();
 const file = z.object({ file_id: z.string(), file_unique_id: z.string(), file_size: integer.nonnegative().optional(), mime_type: z.string().optional(), file_name: z.string().optional(), duration: integer.nonnegative().optional() });
 const message = z.object({ message_id: integer, date: integer, chat: z.object({ id: integer }), from: z.object({ id: integer, is_bot: z.boolean().optional() }), text: z.string().optional(), caption: z.string().optional(), reply_to_message: z.object({ message_id: integer }).optional(), voice: file.optional(), audio: file.optional(), photo: z.array(file).optional(), document: file.optional(), video: z.unknown().optional() });
 const update = z.object({ update_id: integer, message: message.optional(), callback_query: z.object({ id: z.string(), from: z.object({ id: integer }), message: message.omit({ from: true }).optional(), data: z.string().max(64).optional() }).optional() });
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
-export interface TelegramBinding { project_id: string; run_id: string; }
-export interface IncomingUpdate { update_id: string; chat_id: string; sender_id: string; sent_at: string; message_id: string; callback: { id: string; data: string } | null; raw: unknown; }
-export interface ConfirmedSend { message_id: string; chat_id: string; sent_at: string; }
+export type { ChannelBinding as TelegramBinding, IncomingUpdate, ConfirmedSend } from '@ground/contracts';
 const envelope = z.object({ ok: z.boolean(), result: z.unknown().optional(), error_code: integer.optional(), parameters: z.object({ retry_after: integer.nonnegative().optional() }).optional() });
 export class TelegramProviderError extends GroundError {
   constructor(retryable: boolean, public readonly retry_after_ms: number | undefined) { super('PROVIDER_UNAVAILABLE', 'Telegram rejected the request', retryable); }
 }
 
-export class BotTelegramAdapter implements TelegramAdapter {
+export class BotTelegramAdapter implements TelegramAdapter, ChannelAdapter {
+  readonly provider = 'telegram' as const;
   constructor(private readonly config: { token: string; webhook_secret: string; timeout_ms?: number }, private readonly fetcher: typeof fetch = fetch) {
     if (!config.token || !/^[A-Za-z0-9_-]{1,256}$/.test(config.webhook_secret)) throw new GroundError('NOT_READY', 'Telegram configuration is missing');
   }
@@ -34,7 +33,7 @@ export class BotTelegramAdapter implements TelegramAdapter {
     if (sender === undefined) throw new GroundError('VALIDATION_ERROR', 'Telegram author is missing');
     return { update_id: String(u.update_id), chat_id: String(m.chat.id), sender_id: String(sender), message_id: u.callback_query ? `callback:${u.callback_query.id}` : String(m.message_id), sent_at: new Date(m.date * 1000).toISOString(), callback: u.callback_query ? { id: u.callback_query.id, data: u.callback_query.data ?? '' } : null, raw };
   }
-  normalizeUpdate(raw: unknown, binding: TelegramBinding, received_at = new Date().toISOString()): NormalizedMessage {
+  normalizeUpdate(raw: unknown, binding: ChannelBinding, received_at = new Date().toISOString()): NormalizedMessage {
     const u = update.parse(raw);
     const inspected = this.inspectUpdate(raw);
     const m = u.message;

@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { PDFDocument } from 'pdf-lib';
-import { GroundError, type ActorContext, type Job, type JobQueue, type PrivateFileStore, type TransactionRunner, type TransactionContext } from '@ground/contracts';
-import type { BotTelegramAdapter } from '../../adapters/telegram/telegram-adapter';
+import { GroundError, type ActorContext, type Job, type JobQueue, type PrivateFileStore, type TransactionRunner, type TransactionContext,type ChannelAdapter} from '@ground/contracts';
+
 import { ingestionJob, type IngestionRepository, type StoredInput, type ChannelReply, type AuthorizedReplyRouter } from './types';
 
 export class IngestionService {
-  constructor(private readonly deps: { bot_id: string; adapter: BotTelegramAdapter; repository: IngestionRepository; transactions: TransactionRunner; queue: JobQueue; files: PrivateFileStore; router?: AuthorizedReplyRouter; now?: () => string }) {}
+  constructor(private readonly deps: { bot_id: string; adapter: ChannelAdapter; repository: IngestionRepository; transactions: TransactionRunner; queue: JobQueue; files: PrivateFileStore; router?: AuthorizedReplyRouter; now?: () => string }) {}
   async accept(secret: unknown, raw: unknown): Promise<StoredInput> {
     const { adapter, repository: repo, transactions, queue } = this.deps;
     adapter.verifyWebhook(secret);

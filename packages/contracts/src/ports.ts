@@ -34,3 +34,22 @@ export interface InventoryReceiptInput { context:ActorContext; material_id:strin
 export interface InventoryReceiptService extends InventoryService { receive(input:InventoryReceiptInput,tx?:TransactionContext):Promise<OperationResult>; }
 
 export interface CoalescingJobQueue extends JobQueue { enqueueLatest(job:Job,tx:TransactionContext):Promise<void>; }
+
+export interface ChannelBinding { project_id: string; run_id: string; }
+export interface IncomingUpdate { update_id: string; chat_id: string; sender_id: string; sent_at: string; message_id: string; callback: { id: string; data: string } | null; raw: unknown; }
+export interface ConfirmedSend { message_id: string; chat_id: string; sent_at: string; }
+/**
+ * Driven port for a conversational channel. The ingestion and dispatch modules depend on
+ * this interface only, so a channel is swapped at the composition root. BotTelegramAdapter
+ * and SlackChannelAdapter both implement it.
+ */
+export interface ChannelAdapter {
+ readonly provider: NormalizedMessage['provider'];
+ verifyWebhook(secret: unknown): void;
+ inspectUpdate(raw: unknown): IncomingUpdate;
+ normalizeUpdate(raw: unknown, binding: ChannelBinding, received_at?: string): NormalizedMessage;
+ intakeError(raw: unknown): string | null;
+ downloadFile(file_id: string): Promise<{ bytes: Uint8Array; content_type: string; sha256: string }>;
+ sendMessage(input: { recipient_id: string; text: string; reply_to_message_id?: string }): Promise<ConfirmedSend>;
+ answerCallback(callback_query_id: string, text: string): Promise<void>;
+}
