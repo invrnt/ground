@@ -4,13 +4,14 @@ Ground helps construction teams turn jobsite reports into project updates and a 
 
 ## Start here
 
-The preferred evaluation path is a two-minute recording of one complete interaction, followed by its source and result records. The recording and shareable live evidence are not attached yet. This guide describes what to inspect once those artifacts are available; it does not claim that the full live journey has passed.
+The team has completed the hackathon submission, including the project title, written description, public GitHub repository, two-minute demonstration video and social media post tagging the event partners. Start with the video provided in the hackathon portal. The submitted demo uses Telegram for worker reports and request delivery, with the web workspace for supervisor review and approval.
 
 | Artifact | Availability |
 | --- | --- |
-| Two-minute demo and uncut capture | Pending recording |
-| Live project, task, photo and report links | Pending configured run and evaluator access |
-| Received quotation request and redacted run export | Pending live run |
+| Project title and written description | Submitted through the hackathon portal |
+| Public GitHub repository | [invrnt/ground](https://github.com/invrnt/ground) |
+| Two-minute Telegram demo | Submitted through the hackathon portal |
+| Social media post tagging event partners | Completed as part of the submission |
 | Local checks and implementation evidence | [Validation record](docs/release/validation.md) and [evidence index](docs/release/evidence/README.md) |
 | Installation and configuration | [README](README.md#run-locally) and [runbook](docs/release/runbook.md) |
 
@@ -18,7 +19,7 @@ For an accompanied session, ask the team for the current demo URL and a provisio
 
 ## Follow one report through the system
 
-The scenario is a labelled demo project, La Arboleda. These are the expected observations, not a record of completed live acceptance.
+The Telegram demo follows a labelled construction project, La Arboleda. Use this walkthrough to inspect the report, project changes and reviewed next action.
 
 | Step | Action | What to verify |
 | --- | --- | --- |
@@ -39,7 +40,7 @@ Approval alone is not delivery. A quotation request is not a purchase, payment o
 ## What each integration does
 
 - **Telegram** receives reports and delivers approved requests to an authorized demo conversation.
-- **Vercel AI Gateway** is the team's selected configuration for transcription and multimodal extraction. OpenRouter remains a supported alternative. Model access and live extraction still need verification for the selected account.
+- **Vercel AI Gateway** is the team's selected configuration for transcription and multimodal extraction. OpenRouter remains a supported alternative.
 - **Exa** retrieves supplier sources; Ground keeps source attribution and missing facts visible.
 - **Ambiguous** receives the photo, assigned task and managed report updates. Native task due dates are date-only; Ground includes the exact time in the description.
 - **CopilotKit / AG-UI** presents committed state, evidence and the persisted approval interaction.
@@ -50,10 +51,10 @@ The short support session covers invoice versus receipt, correction and recovery
 
 The application enforces project and role access on the server. Models propose operations; server code validates permissions and calculates balances. X-Ray shows observable operations and results, not private model reasoning.
 
-## Current verification limits
+## Implementation evidence and reproduction
 
 Docker images were built and the database, API and worker started locally. Migration, provisioning, seeding and health checks succeeded. Historical critical tests and later provider transport checks are linked in the evidence index with their own scope.
 
-Those checks do not substitute for the full live Telegram → model → Exa/Ambiguous → approval → received-message run. The recording, live export, account-specific Ambiguous read-back and end-to-end delivery remain pending. The sample baseline export contains no live provider results.
+The submitted video is the demonstration reference. The repository's historical validation records describe the checks performed at each stage; their pending-artifact notes predate the completed submission. The sample baseline export is a local fixture and contains no live provider results.
 
-To reproduce independently, follow the runbook and supply your own credentials and authorized demo identities. The repository contains no public passwords or provider keys. Event submission requirements and remaining checks are tracked in the [submission checklist](docs/release/submission.md).
+To reproduce independently, follow the runbook and supply your own credentials and authorized demo identities. The repository contains no public passwords or provider keys. The [submission checklist](docs/release/submission.md) records the event requirements; this guide reflects the team's confirmed submission status.
