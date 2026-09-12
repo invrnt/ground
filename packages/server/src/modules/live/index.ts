@@ -221,13 +221,13 @@ export function liveModule(
             input.proposal_version !== checkpoint.proposal_version
           )
             throw new GroundError("CONFLICT", "Decision version changed");
-          if (checkpoint.status !== "pending")
+          if (!["pending", "approved", "rejected"].includes(checkpoint.status))
             throw new GroundError(
               "CONFLICT",
               "This decision is already resolved. Reload the workspace.",
             );
           if (
-            new Date(checkpoint.expires_at).getTime() <=
+            checkpoint.status === "pending" && new Date(checkpoint.expires_at).getTime() <=
             new Date(context.trusted_time).getTime()
           )
             throw new GroundError(

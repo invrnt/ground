@@ -1,0 +1,7 @@
+.procurement-panel { display:grid; gap:1rem; }
+.procurement-form { display:grid; gap:1rem; margin-top:1rem; }
+.procurement-form label { display:grid; gap:.4rem; }
+.procurement-form select { width:100%; padding:.65rem; font:inherit; border:1px solid #89958f; border-radius:.4rem; background:white; color:inherit; }
+.procurement-form .procurement-review { display:flex; align-items:start; gap:.6rem; }
+.procurement-actions { display:flex; gap:.6rem; flex-wrap:wrap; }
+.procurement-exact-text { white-space:pre-wrap; overflow-wrap:anywhere; padding:1rem; background:#f4f6f3; border-radius:.5rem; font:inherit; }

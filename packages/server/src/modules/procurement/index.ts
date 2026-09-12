@@ -1,0 +1,13 @@
+import { z } from 'zod';
+import { GroundError,idSchema,proposalInputSchema,proposalChangeSchema,approvalDecisionInputSchema } from '@ground/contracts';
+import type { ServerModule } from '../../composition';
+import type { Sessions } from '../../infra/sessions';
+import type { ProcurementService } from './service';
+export * from './service';
+export function procurementModule(service:ProcurementService,sessions:Sessions):ServerModule{return {name:'procurement',poll:()=>service.poll(),registerRoutes:async app=>{
+ app.get<{Params:{p:string}}>('/api/projects/:p/procurement/options',async(request,reply)=>{reply.header('Cache-Control','private, no-store');return service.options(await sessions.context(request,idSchema.parse(request.params.p)));});
+ app.post<{Params:{p:string}}>('/api/projects/:p/proposals',async(request,reply)=>{await sessions.mutation(request);const context=await sessions.context(request,idSchema.parse(request.params.p));const key=request.headers['idempotency-key'];if(typeof key!=='string')throw new GroundError('VALIDATION_ERROR','Idempotency-Key required');return reply.header('Cache-Control','private, no-store').code(201).send(await service.create(context,proposalInputSchema.parse(request.body),key));});
+ app.get<{Params:{p:string;id:string};Querystring:{version?:string}}>('/api/projects/:p/proposals/:id',async(request,reply)=>{const context=await sessions.context(request,idSchema.parse(request.params.p));const version=request.query.version===undefined?undefined:z.coerce.number().int().positive().parse(request.query.version);reply.header('Cache-Control','private, no-store');return service.get(context,idSchema.parse(request.params.id),version);});
+ app.patch<{Params:{p:string;id:string}}>('/api/projects/:p/proposals/:id',async(request,reply)=>{await sessions.mutation(request);const context=await sessions.context(request,idSchema.parse(request.params.p));const key=request.headers['idempotency-key'];if(typeof key!=='string')throw new GroundError('VALIDATION_ERROR','Idempotency-Key required');reply.header('Cache-Control','private, no-store');return service.change(context,idSchema.parse(request.params.id),proposalChangeSchema.parse(request.body),key);});
+ app.post<{Params:{p:string;id:string}}>('/api/projects/:p/proposals/:id/decisions',async(request,reply)=>{await sessions.mutation(request);const context=await sessions.context(request,idSchema.parse(request.params.p));const input=approvalDecisionInputSchema.parse(request.body);reply.header('Cache-Control','private, no-store');return service.decide(context,{...input,proposal_id:idSchema.parse(request.params.id)});});
+ }};}
