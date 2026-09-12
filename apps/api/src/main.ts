@@ -15,4 +15,8 @@ if (existsSync(webRoot)) {
  app.get('/projects/*',async(_request,reply)=>reply.sendFile('index.html'));
 }
 await app.listen({ port: Number(process.env['PORT'] ?? 3000), host: process.env['HOST'] ?? '127.0.0.1' });
-for (const signal of ['SIGINT', 'SIGTERM'] as const) process.on(signal, () => { void app.close(); });
+let closing=false;
+for (const signal of ['SIGINT', 'SIGTERM'] as const) process.on(signal, () => {
+ if(closing)return;closing=true;
+ void app.close().catch(()=>{console.error({status:'api_shutdown_failed'});process.exitCode=1;});
+});

@@ -1,5 +1,8 @@
 # Install, run and recover
 
+For local setup, use `pnpm run setup`, then `pnpm start`; see the [quick-start guide](../../README.md#run-locally). `pnpm restart` stops and recreates API plus worker to load `.env` changes. `pnpm stop` retains volumes. Provider keys may remain pending while inspecting the local app. Docker daemon access is required; local script checks do not prove a Docker deployment or live integration.
+
+
 ## Local setup
 
 Use Node 24.21.0, pnpm 11.24.0, PostgreSQL 18.4 and ffmpeg. The lockfile pins all package versions. The release gate ran on host Node 26.7.0; the pinned Node 24 Docker image has not been executed in this environment.

@@ -7,6 +7,10 @@
     "node": ">=24 <27"
   },
   "scripts": {
+    "setup": "node scripts/lifecycle.ts setup",
+    "start": "node scripts/lifecycle.ts start",
+    "restart": "node scripts/lifecycle.ts restart",
+    "stop": "node scripts/lifecycle.ts stop",
     "dev": "pnpm --parallel --filter ./apps/* dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck && tsc --noEmit -p tools/probes/tsconfig.json",
