@@ -15,7 +15,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "demo:configure": "tsx scripts/configure-demo.ts",
     "demo:seed": "tsx scripts/seed-demo.ts",
-    "demo:reset": "tsx scripts/preflight.ts reset",
+    "demo:reset": "tsx scripts/reset-demo.ts",
     "demo:preflight": "tsx scripts/preflight.ts",
     "probe:server": "tsx tools/probes/server.ts",
     "probe:client": "tsx tools/probes/client.ts"
