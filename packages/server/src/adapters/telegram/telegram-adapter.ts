@@ -51,11 +51,11 @@ export class BotTelegramAdapter implements TelegramAdapter, ChannelAdapter {
   intakeError(raw: unknown): string | null {
     const m = update.parse(raw).message;
     if (!m) return null;
-    if (m.video !== undefined || (!m.text && !m.caption && !m.voice && !m.audio && !m.photo?.length && !m.document)) return 'Envía texto, audio, una foto o un PDF.';
-    if ((m.voice?.duration ?? m.audio?.duration ?? 0) > 60) return 'El audio debe durar como máximo 60 segundos.';
-    if (m.document && m.document.mime_type !== 'application/pdf') return 'Solo se aceptan documentos PDF de hasta cinco páginas.';
+    if (m.video !== undefined || (!m.text && !m.caption && !m.voice && !m.audio && !m.photo?.length && !m.document)) return 'Send text, audio, a photo or a PDF.';
+    if ((m.voice?.duration ?? m.audio?.duration ?? 0) > 60) return 'Audio must be no longer than 60 seconds.';
+    if (m.document && m.document.mime_type !== 'application/pdf') return 'Only PDF documents of up to five pages are accepted.';
     const files = [m.voice, m.audio, m.photo?.at(-1), m.document];
-    if (files.some(f => f && (f.file_size ?? 0) > MAX_FILE_BYTES)) return 'Cada archivo debe pesar como máximo 10 MB.';
+    if (files.some(f => f && (f.file_size ?? 0) > MAX_FILE_BYTES)) return 'Each file must be no larger than 10 MB.';
     return null;
   }
   private async call(method: string, body: object, effect: boolean): Promise<unknown> {

@@ -267,12 +267,12 @@ export class ReportingService implements ReportService {
     });
   }
   async answer(context: ActorContext, text: string): Promise<{ text: string }> {
-    const answer = await this.query(context, text, "es");
+    const answer = await this.query(context, text, "en");
     return {
       text:
         answer.answer +
         (answer.evidence_ids.length
-          ? `\nEvidencia: ${answer.evidence_ids.map((id) => `/projects/${context.project_id}/evidence/${id}`).join(", ")}`
+          ? `\nEvidence: ${answer.evidence_ids.map((id) => `/projects/${context.project_id}/evidence/${id}`).join(", ")}`
           : ""),
     };
   }

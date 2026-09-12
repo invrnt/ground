@@ -9,5 +9,5 @@ export type Extraction = z.infer<typeof extractionSchema>;
 export const commandShapes = operationProposalSchema.options.map(schema=>({ type:schema.shape.type.value,entity_ids:Object.keys(schema.shape.entity_ids.shape),fields:Object.keys(schema.shape.fields.shape) }));
 export interface ProviderMetadata { provider:ReportProvider; upstream_provider:string|null; model:string; request_id:string|null; duration_ms:number; usage:unknown; cost:number|null; prompt_version:string; schema_version:number; }
 export interface ExtractedReport { extraction:Extraction; metadata:ProviderMetadata; }
-export const PROMPT_VERSION='ground-interpretation-v1';
+export const PROMPT_VERSION='ground-interpretation-v2-en';
 export const SCHEMA_VERSION=1;

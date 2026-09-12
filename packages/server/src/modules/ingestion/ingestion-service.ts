@@ -26,7 +26,7 @@ export class IngestionService {
       await repo.insertInput(input, tx);
       await repo.recordUpdate(this.deps.bot_id, incoming.update_id, id, tx);
       await repo.appendEvent(input, 'input.received', tx);
-      await this.enqueueReply(input, error ?? (input.status === 'awaiting_attachment' ? 'Recibí tu foto. Responde al reporte correspondiente para vincularla.' : 'Recibí tu reporte. Está guardado y pendiente de procesamiento.'), tx, incoming.callback?.id ?? null);
+      await this.enqueueReply(input, error ?? (input.status === 'awaiting_attachment' ? 'I received your photo. Reply to the corresponding report to link it.' : 'I received your report. It is saved and waiting to be processed.'), tx, incoming.callback?.id ?? null);
       if (!error) {
         if (message.media.length) await queue.enqueue(ingestionJob(input, 'send_channel_reply', id, `media:${id}`, 'intake_media'), tx);
         else await this.scheduleInput(input, tx);
@@ -70,7 +70,7 @@ export class IngestionService {
   /** Only committed public operational facts belong here. Restricted DTOs have no fields in this API. */
   async enqueueCommittedSummary(input: StoredInput, result: { operation_id: string; applied_count: number; pending_count: number; project_version: number }, tx: TransactionContext): Promise<string> {
     if (![result.applied_count, result.pending_count, result.project_version].every(n => Number.isSafeInteger(n) && n >= 0)) throw new GroundError('VALIDATION_ERROR', 'Invalid committed summary');
-    return this.enqueueReply({ ...input, operation_id: result.operation_id }, `Registré ${result.applied_count} cambios en la obra. Quedan ${result.pending_count} acciones pendientes. Versión del proyecto: ${result.project_version}.`, tx);
+    return this.enqueueReply({ ...input, operation_id: result.operation_id }, `Recorded ${result.applied_count} project changes. ${result.pending_count} actions remain pending. Project version: ${result.project_version}.`, tx);
   }
   /** True when this channel created the row, so every other channel leaves the job alone. */
   private owns(row: { provider: StoredInput['provider']; bot_id?: string }): boolean {
@@ -117,15 +117,15 @@ export class IngestionService {
         const bytes = file.bytes;
         const prefix = Buffer.from(bytes.subarray(0, 16));
         const mime = media.kind === 'photo' && prefix[0] === 0xff && prefix[1] === 0xd8 ? 'image/jpeg' : media.kind === 'document' && prefix.toString().startsWith('%PDF-') ? 'application/pdf' : media.kind === 'audio' && (prefix.toString().startsWith('OggS') || prefix.toString().startsWith('ID3') || prefix[0] === 0xff || prefix.toString().startsWith('RIFF') || prefix.toString().includes('ftyp')) ? media.mime_type : null;
-        if (!mime) throw new GroundError('VALIDATION_ERROR', 'El formato del archivo no coincide con su contenido.');
+        if (!mime) throw new GroundError('VALIDATION_ERROR', 'The file format does not match its contents.');
         await files.put({ id: media.id, bytes, content_type: mime, sha256: file.sha256 });
         media.sha256 = file.sha256;
         media.size_bytes = bytes.byteLength;
         media.mime_type = mime;
         if (mime === 'application/pdf') {
           let pdf: PDFDocument;
-          try { pdf = await PDFDocument.load(bytes); } catch { throw new GroundError('VALIDATION_ERROR', 'No pude leer el PDF. Envía un archivo legible sin contraseña.'); }
-          if (pdf.getPageCount() > 5) throw new GroundError('VALIDATION_ERROR', 'El PDF debe tener como máximo cinco páginas.');
+          try { pdf = await PDFDocument.load(bytes); } catch { throw new GroundError('VALIDATION_ERROR', 'I could not read the PDF. Send a readable file without a password.'); }
+          if (pdf.getPageCount() > 5) throw new GroundError('VALIDATION_ERROR', 'The PDF must contain no more than five pages.');
         }
       }
     } catch (error) {

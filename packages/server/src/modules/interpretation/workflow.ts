@@ -47,7 +47,7 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
      assertExtraction(extracted.extraction,[input.message.text,record.transcript,record.answer_text].filter(Boolean).join('\n'));
      if(extracted.extraction.irrelevant){record.status='ignored';await transactions.run(tx=>repository.save(record,tx));return;}
      if(extracted.extraction.query_intent){
-       if(!this.deps.queries)throw new GroundError('NOT_READY','La consulta espera el servicio de reportes.');
+       if(!this.deps.queries)throw new GroundError('NOT_READY','The query is waiting for the reporting service.');
        const answer=await this.deps.queries.answer(actor,extracted.extraction.query_intent);
        await transactions.run(async tx=>{await this.deps.intake.assertActive(actor.project_id,actor.run_id,tx);const existing=await repository.get(input.id,tx);if(existing?.status==='completed')return;record.status='completed';await repository.save(record,tx);await this.deps.replies.enqueueReply(input,answer.text,tx);});return;
      }
@@ -57,7 +57,7 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
      let newIssue=outcomes.flatMap(item=>item.result.state_diff).find(diff=>diff.entity_type==='issue')?.entity_id??null;
      for(const [index,command]of extracted.extraction.commands.entries()){
        const prior=outcomes.find(item=>item.index===index);
-       if(prior){if(prior.source_hash!==hash(JSON.stringify(command)))errors.push('La aclaración cambió un comando ya registrado. Solicita una corrección a supervisión.');continue;}
+       if(prior){if(prior.source_hash!==hash(JSON.stringify(command)))errors.push('The clarification changed an already recorded operation. Ask a supervisor to correct it.');continue;}
        try{
          const outcome=await transactions.run(async tx=>{
            await this.deps.intake.assertActive(actor.project_id,actor.run_id,tx);
@@ -68,7 +68,7 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
            const purchases=this.deps.purchases?(await this.deps.purchases.list(actor,tx)).purchases:[];
            const proposal=resolveCommand(command,context,[input.id,...input.message.media.map(media=>media.id)],(input.message.media.find(media=>media.kind==='document')??input.message.media.find(media=>media.kind==='photo'))?.sha256??null,newIssue,purchases);
            const result=await this.deps.commands.execute({context:actor,proposal,source_message_id:input.id,idempotency_key:`input:${input.id}:command:${index}:answer:${record.question_count}`},tx);
-           if(!['applied','already_applied'].includes(result.status))throw new GroundError('VALIDATION_ERROR','El cambio necesita revisión. Confirma los datos y las existencias.');
+           if(!['applied','already_applied'].includes(result.status))throw new GroundError('VALIDATION_ERROR','This change needs review. Confirm the details and available stock.');
            const item={index,source_hash:hash(JSON.stringify(command)),proposal,result};
            record.metadata['command_outcomes']=[...outcomes,item];await repository.save(record,tx);return item;
          });
@@ -76,12 +76,12 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
          if(command.type==='report_issue')newIssue=outcome.result.state_diff.find(diff=>diff.entity_type==='issue')?.entity_id??null;
        }catch(error){
          if(error instanceof GroundError&&error.code==='NOT_READY'){pendingHandler=true;errors.push(error.message);}
-         else if(error instanceof GroundError&&['VALIDATION_ERROR','CONFLICT','FORBIDDEN'].includes(error.code))errors.push('Confirma los datos del cambio pendiente y sus referencias.');
+         else if(error instanceof GroundError&&['VALIDATION_ERROR','CONFLICT','FORBIDDEN'].includes(error.code))errors.push('Confirm the pending change and its references.');
          else throw error;
        }
      }
      if(errors.length){
-       if(pendingHandler){record.status='pending_handler';record.error='Hay cambios pendientes de un servicio todavía no registrado.';await transactions.run(tx=>repository.save(record,tx));throw new GroundError('NOT_READY',record.error);}
+       if(pendingHandler){record.status='pending_handler';record.error='Some changes are waiting for a service that is not yet registered.';await transactions.run(tx=>repository.save(record,tx));throw new GroundError('NOT_READY',record.error);}
        await this.needsInput(input,actor,record,errors.slice(0,2));return;
      }
      await transactions.run(async tx=>{
@@ -95,7 +95,7 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
      });
    }catch(error){
      if(error instanceof GroundError&&['VALIDATION_ERROR','CONFLICT','FORBIDDEN'].includes(error.code)){await this.needsInput(input,actor,record,[error.message]);return;}
-     record.status=error instanceof GroundError&&error.code==='NOT_READY'?'pending_handler':'retryable';record.error=error instanceof GroundError?error.message:'No pude procesar el reporte. El original sigue guardado.';
+     record.status=error instanceof GroundError&&error.code==='NOT_READY'?'pending_handler':'retryable';record.error=error instanceof GroundError?error.message:'I could not process the report. The original is still saved.';
      await transactions.run(async tx=>{await this.deps.intake.assertActive(actor.project_id,actor.run_id,tx);await repository.save(record,tx);await this.deps.intake.appendEvent(input,'input.failed',tx);});
      throw error;
    }
@@ -104,22 +104,22 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
    await this.deps.transactions.run(async tx=>{
      const snapshot=await this.deps.projects.snapshot(actor,tx);const current=await this.deps.repository.get(input.id,tx);if(current&&['completed','needs_input'].includes(current.status))return;
      record.status='needs_input';record.error=questions.slice(0,2).join(' ');
-     if(record.question_count>=2){await this.deps.repository.save(record,tx);await this.deps.replies.enqueueReply(input,'El reporte sigue sin resolver. Una persona supervisora debe revisar el original en Ground.',tx);return;}
+     if(record.question_count>=2){await this.deps.repository.save(record,tx);await this.deps.replies.enqueueReply(input,'The report is still unresolved. A supervisor needs to review the original in Ground.',tx);return;}
      const token=randomBytes(8).toString('hex');const count=Math.min(questions.length,2-record.question_count);record.question_count+=count;
      const clarification:Clarification={id:randomUUID(),pending_operation_ids:[input.operation_id],report_id:input.report_id??input.id,thread_id:`telegram:${input.message.chat_id}:${input.message.message_id}`,question:questions.slice(0,count).join('\n').slice(0,700),options:[],allowed_respondent_ids:[actor.actor_id,...snapshot.members.filter(member=>Array.isArray(member.fields['roles'])&&member.fields['roles'].some(role=>['supervisor','admin'].includes(role))).map(member=>member.id)],expected_version:snapshot.project_version,expires_at:new Date(Date.now()+30*60*1000).toISOString(),token_hash:hash(token),answer:null,result:null};
      await this.deps.repository.save(record,tx);await this.deps.repository.saveClarification(input.id,actor,clarification,record.question_count,tx);await this.deps.intake.appendEvent(input,'clarification.required',tx);
-     await this.deps.replies.enqueueReply(input,`${clarification.question}\nResponde con: c:${clarification.id}:${token} tu respuesta`,tx);
+     await this.deps.replies.enqueueReply(input,`${clarification.question}\nReply with: c:${clarification.id}:${token} your answer`,tx);
    });
  }
  async answer(context:ActorContext,id:string,token:string,answer:string,expected_version?:number,tx?:TransactionContext):Promise<OperationResult>{
    if(!tx)return this.deps.transactions.run(current=>this.answer(context,id,token,answer,expected_version,current));
    const snapshot=await this.deps.projects.snapshot(context,tx);const row=await this.deps.repository.clarification(id,context,tx);const clarification=row.clarification;
    const expected=Buffer.from(clarification.token_hash,'hex'),actual=Buffer.from(hash(token),'hex');
-   if(!context.permissions.includes('report:create')||!clarification.allowed_respondent_ids.includes(context.actor_id)||expected.length!==actual.length||!timingSafeEqual(expected,actual))throw new GroundError('FORBIDDEN','No puedes responder esta aclaración.');
+   if(!context.permissions.includes('report:create')||!clarification.allowed_respondent_ids.includes(context.actor_id)||expected.length!==actual.length||!timingSafeEqual(expected,actual))throw new GroundError('FORBIDDEN','You are not authorized to answer this clarification.');
    if(clarification.result)return clarification.result;
-   if(Date.parse(clarification.expires_at)<=Date.now())throw new GroundError('EXPIRED','La aclaración venció. Requiere revisión de supervisión.');
-   if(snapshot.project_version!==clarification.expected_version||(expected_version!==undefined&&expected_version!==clarification.expected_version))throw new GroundError('CONFLICT','La obra cambió. Revisa el reporte antes de responder.');
-   if(!answer.trim()||answer.length>1000)throw new GroundError('VALIDATION_ERROR','La respuesta debe tener entre 1 y 1000 caracteres.');
+   if(Date.parse(clarification.expires_at)<=Date.now())throw new GroundError('EXPIRED','This clarification expired. Supervisor review is required.');
+   if(snapshot.project_version!==clarification.expected_version||(expected_version!==undefined&&expected_version!==clarification.expected_version))throw new GroundError('CONFLICT','The project changed. Review the report before answering.');
+   if(!answer.trim()||answer.length>1000)throw new GroundError('VALIDATION_ERROR','The answer must contain between 1 and 1000 characters.');
    const input=await this.deps.intake.getInput(row.input_id,tx);const record=await this.deps.repository.get(input.id,tx);if(!record)throw new GroundError('NOT_FOUND','Interpretation not found');
    record.answer_text=answer;record.result=null;record.status='processing';record.error=null;
    const job=ingestionJob(input,'process_input',input.id,`clarification:${id}`);

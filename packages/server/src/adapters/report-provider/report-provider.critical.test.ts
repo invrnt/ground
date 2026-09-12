@@ -59,7 +59,7 @@ describe('Vercel AI Gateway contract',()=>{
  });
  it.each([[401,false],[429,true],[503,true]])('classifies Vercel HTTP %s without retries or leaking errors',async(status,retryable)=>{
   const {adapter,http}=fixture({error:{code:'invalid_request_error',message:'sensitive body'}},status,undefined,'vercel');
-  await expect(adapter.interpretReport(input)).rejects.toMatchObject({code:'PROVIDER_UNAVAILABLE',retryable,message:'El proveedor no pudo procesar el reporte.'});expect(http).toHaveBeenCalledTimes(1);
+  await expect(adapter.interpretReport(input)).rejects.toMatchObject({code:'PROVIDER_UNAVAILABLE',retryable,message:'The provider could not process the report.'});expect(http).toHaveBeenCalledTimes(1);
  });
  it.each([{error:{code:'missing_parameter'}},{...completion,choices:[{finish_reason:'length',message:{content:JSON.stringify(extraction)}}]},{...completion,choices:[{finish_reason:'stop',message:{content:null,refusal:'No'}}]},{...completion,choices:[{finish_reason:'stop',message:{content:'{}'}}]}])('rejects symbolic errors and invalid extraction',async body=>{
   const {adapter}=fixture(body,200,undefined,'vercel');await expect(adapter.interpretReport(input)).rejects.toThrow();

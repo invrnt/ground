@@ -50,7 +50,7 @@ Run the smallest check that proves the changed behavior. Add regression tests fo
 
 ## Product rules
 
-- Web UI and video default to English. Telegram worker copy is Spanish. Persist UTC; display `America/Bogota`, COP and the manifest's scenario date. Keep source text intact.
+- Web UI, video and all generated Telegram replies use English, including acknowledgements, clarification questions, query answers and errors, even when user input is Spanish. Persist UTC; display `America/Bogota`, COP and the manifest's scenario date. Keep source text intact.
 - Label demo data and recipients. Display unknown prices and conditions as unknown. Never imply a quote request is a confirmed purchase or receipt.
 - Use semantic controls, visible focus, labels and readable contrast. States must have text, not color alone. Support reduced motion.
 - Enforce project and role checks on the server, including event streams and file access. Cost, address and approval data must be omitted for unauthorized roles.
