@@ -62,3 +62,5 @@ Stage 4 integration repair grants from the Orchestrator: sourcing may edit `pack
 Stage 5 temporary grants from the Orchestrator: procurement may extend `packages/server/src/modules/project/repository.ts` with proposal/request/decision snapshot reads, `packages/server/src/modules/sourcing/service.ts` with transactional current-selection validation, and `packages/server/src/modules/live/index.ts` with idempotent committed resume delegation. Prior owners are inactive. Existing role, scope and token checks remain in place, and no duplicate snapshot, selection or checkpoint mechanism is allowed.
 
 The Stage 5 project repository grant also permits an optional scoped office-links reader injection. The office module owns its SQL; the canonical snapshot calls that injected reader without creating a second store.
+
+Stage 6 temporary grants from the Orchestrator: operations may edit `packages/server/src/modules/project/seed.ts` solely to accept an existing transaction for atomic reset, and `packages/server/src/infra/jobs.ts` solely for canonical retryKnown/cancelRun helpers. Prior owners are inactive. Uncertain writes remain ineligible for blanket retry.
