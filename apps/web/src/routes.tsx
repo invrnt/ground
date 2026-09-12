@@ -1,1 +1,1 @@
-export const routes: readonly { path: string; feature: string }[] = [{path:'/login',feature:'auth'},{path:'/',feature:'workspace'},{path:'/projects/:p',feature:'workspace'},{path:'/projects/:p/evidence/:id',feature:'evidence'}];
+export const routes: readonly { path: string; feature: string }[] = [{path:'/login',feature:'auth'},{path:'/',feature:'workspace'},{path:'/projects/:p',feature:'workspace'},{path:'/projects/:p/evidence/:id',feature:'evidence'},{path:'/projects/:p/reports/:date',feature:'reports'}];
