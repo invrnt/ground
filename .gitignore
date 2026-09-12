@@ -5,3 +5,4 @@ node_modules/
 dist/
 .storage/
 *.tsbuildinfo
+/DEMO-PRIVADA.md

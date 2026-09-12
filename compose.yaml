@@ -22,10 +22,17 @@ services:
       PORT: 3000
       PRIVATE_STORAGE_PATH: /storage/private
       WEB_DIST: /app/apps/web/dist
+      DEMO_MANIFEST_PATH: /config/manifest.json
     ports:
       - 127.0.0.1:${PORT:-3000}:3000
     volumes:
       - private-files:/storage/private
+      - type: bind
+        source: ${DEMO_MANIFEST_PATH:-./demo/manifest.json}
+        target: /config/manifest.json
+        read_only: true
+        bind:
+          create_host_path: false
     depends_on:
       db:
         condition: service_healthy
@@ -46,8 +53,15 @@ services:
       PORT: 3000
       PRIVATE_STORAGE_PATH: /storage/private
       WEB_DIST: /app/apps/web/dist
+      DEMO_MANIFEST_PATH: /config/manifest.json
     volumes:
       - private-files:/storage/private
+      - type: bind
+        source: ${DEMO_MANIFEST_PATH:-./demo/manifest.json}
+        target: /config/manifest.json
+        read_only: true
+        bind:
+          create_host_path: false
     depends_on:
       db:
         condition: service_healthy

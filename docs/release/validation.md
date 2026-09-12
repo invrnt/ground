@@ -14,7 +14,15 @@ Checked application commit: `52833a7033eb801163fb5159bb9bee0cba5e7a89`, 2026-09-
 | workspace-sync.critical.test.ts | 2 | Passed |
 | dispatch.critical.test.ts | 1 | Passed |
 
-The observed release configuration repair pins container HOST/private storage/web output paths in Compose and initializes node ownership for the image's private directory. `docker compose config --no-env-resolution --format json` parsed successfully; assertions confirmed both containers use the mounted private path and the API remains published only on host loopback. Docker image execution remains unverified because daemon access was unavailable. No application code changed after the passing release gate.
+The observed release configuration repair pins container HOST/private storage/web output paths in Compose and initializes node ownership for the image's private directory. `docker compose config --no-env-resolution --format json` parsed successfully; assertions confirmed both containers use the mounted private path and the API remains published only on host loopback. Docker image execution was not performed during that historical release gate because daemon access was unavailable. Later work is recorded separately below.
+
+## Docker runtime smoke check
+
+On 2026-09-12 the operator used sudo to access the already-running Docker daemon, version 29.7.2. The existing lifecycle setup/start commands built the Node 24.21.0 images, installed the frozen dependencies, built the application, applied migrations through 014-channel-providers.sql, provisioned the demo accounts and seeded an active run. API and PostgreSQL were healthy and the worker was running. `/health/ready` returned HTTP 200 locally and through the configured HTTPS tunnel; the local login route returned HTML with HTTP 200.
+
+The private manifest was mounted read-only in both application containers. Configured mount paths were checked without printing resolved secrets. The manifest still reported missing user mappings, material details, address, media and recipient reachability. No completed login, audio extraction, approved send or Ambiguous write chain is claimed by this check.
+
+This is an operational smoke check of the image built at that time, including the local manifest mount change. It is not a repeat of the historical critical gate or evidence for subsequent application commits. The live recording and shareable run evidence remain pending. Private endpoint URLs, credentials and user identifiers are omitted from this public record.
 
 ## Original acceptance inventory
 

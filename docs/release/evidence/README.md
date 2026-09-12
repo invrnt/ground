@@ -12,8 +12,10 @@
 | Ambiguous API mappings | Public OpenAPI, account access pending | [Office handoff](../../../orchestration/execution/handoffs/office-sync.md) |
 | Approval/dispatch uncertainty and restart | Controlled transport, actual PostgreSQL | [Procurement](../../../orchestration/execution/handoffs/procurement.md), [dispatch](../../../orchestration/execution/handoffs/dispatch.md) |
 | Reset and redaction | Local OperationsService observation | [Operations handoff](../../../orchestration/execution/handoffs/operations.md) |
+| OpenRouter/Vercel provider selection | 22 controlled HTTP tests and workspace typecheck | [Gateway handoff](../../../orchestration/execution/handoffs/ai-gateway.md) |
+| Docker build, migrations, seed and API/worker health | Actual local runtime smoke check; no live provider chain | [Runtime validation](../validation.md#docker-runtime-smoke-check) |
 | Main run video, live export and provider object links | Pending | Record after configuration; no placeholders count as evidence |
 
 For the final run, retain source message/update IDs, exact code/scenario/model versions, project/run IDs, approval and request IDs, actual provider message ID, Ambiguous object IDs/verified versions, source URLs and capture timestamps. Store secrets separately. Intended evaluator links must preserve private access; no public bearer URLs belong in this repository.
 
-The OpenAI row above is historical evidence. Current transport is OpenRouter; see the [migration handoff](../../../orchestration/execution/handoffs/openrouter.md). No live OpenRouter result has been recorded.
+The OpenAI row above is historical evidence. Current code selects OpenRouter or Vercel AI Gateway through AI_PROVIDER; the team's demo configuration selects Vercel. See the [OpenRouter migration](../../../orchestration/execution/handoffs/openrouter.md) and [gateway selection handoff](../../../orchestration/execution/handoffs/ai-gateway.md). No live extraction result for either gateway is claimed here.

@@ -2,6 +2,8 @@
 
 A construction workspace connecting Telegram reports to project records and reviewed procurement requests. Product requirements are in [PRD.md](PRD.md). The application includes authenticated project records, reviewed procurement, dispatch and admin recovery. Live provider acceptance remains pending configured accounts and credentials.
 
+**Evaluating Ground? Start with the [judge's guide](JUDGES.md)** for the expected interaction, evidence links and current verification limits. The team's demo selects Vercel AI Gateway; OpenRouter remains a supported alternative.
+
 ## Run locally
 
 Install Node 24.21.0, pnpm 11.24.0 and Docker Engine/Desktop with Compose. Docker must be running and accessible to your user. From the repository root:
@@ -24,7 +26,7 @@ Restart stops both application services before recreating them with the current 
 
 Set `AI_PROVIDER=openrouter` or `AI_PROVIDER=vercel` in `.env`, configure that provider's key and separate transcription/interpretation models, then run `pnpm restart`. OpenRouter remains the default. Vercel transcription is beta and requires account access. See the [report provider contract](orchestration/api/openrouter.md). After changing application code, use `pnpm start` to rebuild images; restart alone reuses the built images.
 
-For Docker diagnostics use `docker compose ps` and local service logs. Avoid printing resolved Compose configuration or sharing logs containing private content. Telegram webhooks require a reachable HTTPS origin and configured accounts; the default local URL is for local inspection. Custom `DEMO_MANIFEST_PATH` must identify a file included in the image, such as `/app/demo/manifest.json`; private host files are not mounted automatically.
+For Docker diagnostics use `docker compose ps` and local service logs. Avoid printing resolved Compose configuration or sharing logs containing private content. Telegram webhooks require a reachable HTTPS origin and configured accounts; the default local URL is for local inspection. Set `DEMO_MANIFEST_PATH` in `.env` to the existing manifest file on the host, preferably an absolute path under ignored `.storage/`. Compose mounts it read-only at `/config/manifest.json` in API and worker and sets the container environment accordingly. When unset or empty, it mounts the unconfigured `./demo/manifest.json` example. A missing source file fails instead of creating a directory. Do not set the host variable to `/config/manifest.json` unless that is actually the host source file.
 
 For development without the Compose launcher, run `pnpm install` and `pnpm dev`. Those commands require your own configured PostgreSQL and process environment; Vite proxies `/api` to port 3000. `pnpm check` runs the local code checks.
 

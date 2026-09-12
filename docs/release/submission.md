@@ -20,7 +20,9 @@ Leave items unchecked until supporting evidence is recorded here or linked from 
 
 ## Product description
 
-Ground turns jobsite voice notes and photos into operational updates. OpenRouter interprets the report, Exa researches materials, and Ambiguous keeps the task, evidence and site report together. Supervisors use CopilotKit to inspect the changes and approve the next action. Workers stay in Telegram.
+Ground turns jobsite voice notes and photos into operational updates. Models accessed through Vercel AI Gateway interpret the report, Exa researches materials, and Ambiguous keeps the task, evidence and site report together. Supervisors use CopilotKit to inspect the changes and approve the next action. Workers stay in Telegram. Vercel is the team's selected demo configuration; OpenRouter is also supported. Live model results remain pending verification.
+
+The public [evaluation guide](../../JUDGES.md) explains the intended walkthrough and current evidence availability. Add the actual recording and authorized evidence links before submission; no placeholder is a completed demo artifact.
 
 ## Technical description
 

@@ -5,11 +5,11 @@ For local setup, use `pnpm run setup`, then `pnpm start`; see the [quick-start g
 
 ## Local setup
 
-Use Node 24.21.0, pnpm 11.24.0, PostgreSQL 18.4 and ffmpeg. The lockfile pins all package versions. The release gate ran on host Node 26.7.0; the pinned Node 24 Docker image has not been executed in this environment.
+Use Node 24.21.0, pnpm 11.24.0, PostgreSQL 18.4 and ffmpeg. The lockfile pins all package versions. The historical release gate ran on host Node 26.7.0. A later Docker smoke check built and started the pinned Node 24 image; see [validation](validation.md#docker-runtime-smoke-check).
 
 ```sh
 pnpm install --frozen-lockfile
-cp .env.example .env
+test -e .env || cp .env.example .env
 ```
 
 Edit `.env` privately. Load it into the process environment with your existing environment launcher. For a trusted, shell-compatible file you authored, `set -a; . ./.env; set +a` exports its values without printing them. Do not use `cat`, `env` or shell tracing when secrets are loaded.
@@ -74,23 +74,16 @@ docker compose run --rm api pnpm demo:seed
 docker compose up -d api worker
 ```
 
-The configured manifest must exist at its container path. For a private `./.storage/demo/manifest.json`, add this local Compose override before provisioning; `.storage` and `.env` are excluded from the image:
+Create a private host copy if one does not already exist:
 
-```yaml
-services:
-  api:
-    environment:
-      DEMO_MANIFEST_PATH: /config/manifest.json
-    volumes:
-      - ./.storage/demo/manifest.json:/config/manifest.json:ro
-  worker:
-    environment:
-      DEMO_MANIFEST_PATH: /config/manifest.json
-    volumes:
-      - ./.storage/demo/manifest.json:/config/manifest.json:ro
+```sh
+mkdir -p .storage/demo
+test -e .storage/demo/manifest.json || cp demo/manifest.json .storage/demo/manifest.json
 ```
 
-Keep that deployment override private. Use a URL-safe database password or supply a correctly encoded DATABASE_URL in a private Compose override. The checked-in Compose shape keeps PostgreSQL private and exposes the API only on host loopback. Docker startup was unavailable during this release check; validate the host, TLS, volumes and backups before evaluator access.
+Set `DEMO_MANIFEST_PATH` in `.env` to the absolute host path of that file. Complete the manifest before provisioning. The checked-in Compose file bind-mounts it read-only at `/config/manifest.json` for both API and worker. No separate override is required. The container environment uses that target path automatically; the host setting must remain the source path. The file must exist and be readable by the container's node user. Keep its parent directory private. `.storage` and `.env` are excluded from Git and the image build context.
+
+When `DEMO_MANIFEST_PATH` is empty, Compose uses the tracked unconfigured example. It cannot invent user mappings or material facts. The lifecycle commands encode POSTGRES_PASSWORD into the container connection URL; for the direct Compose commands above use a URL-safe password or explicitly provide a correctly encoded GROUND_COMPOSE_DATABASE_URL. PostgreSQL remains private and the API is exposed only on host loopback. A later local Docker startup check passed; a persistent hosted deployment and live provider acceptance remain separate checks.
 
 ## Reset and uncertain work
 
