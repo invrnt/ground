@@ -44,7 +44,9 @@ Open the configured origin and sign in as a provisioned account. `/health/live` 
 | DEMO_PASSWORD_ADMIN/LUIS/ANA/JUAN/PURCHASING | Unique initial account passwords, at least 12 characters |
 | DEMO_MANIFEST_PATH | Private configured manifest copy |
 | TELEGRAM_BOT_TOKEN / TELEGRAM_WEBHOOK_SECRET | Bot credentials and webhook secret |
-| OPENROUTER_API_KEY / OPENROUTER_TRANSCRIPTION_MODEL / OPENROUTER_INTERPRETATION_MODEL | Configured account and supported model names; no model is assumed |
+| AI_PROVIDER | `openrouter` by default, or `vercel`; restart API and worker together |
+| OPENROUTER_API_KEY / OPENROUTER_TRANSCRIPTION_MODEL / OPENROUTER_INTERPRETATION_MODEL | Required only for OpenRouter; no model is assumed |
+| AI_GATEWAY_API_KEY / AI_GATEWAY_TRANSCRIPTION_MODEL / AI_GATEWAY_INTERPRETATION_MODEL | Required only for Vercel; transcription beta account access must be checked |
 | EXA_API_KEY | Exa account key |
 | AMBIGUOUS_API_TOKEN / AMBIGUOUS_WORKSPACE_ID | Authorized Ambiguous account/workspace |
 | AMBIGUOUS_BASE_URL | Normally `https://app.ambiguous.ai`; official API version is 1 |
@@ -106,4 +108,4 @@ Follow the single [main journey](../../orchestration/testing/critical-journeys.m
 
 From the admin Operations panel, download the run export. Review it for personal data and intended evaluator scope even though known secrets are redacted. The export endpoint is `/api/projects/:projectId/runs/:runId/export` and requires the authorized admin session. Store the real export and recordings in approved private artifact storage, then update the evidence index with their hashes and authorized evaluator links. Do not replace the labelled local baseline export with an unlabelled fixture.
 
-See the [OpenRouter contract](../../orchestration/api/openrouter.md) for compatible model selection and pending live checks. Configuration alone does not verify access.
+See the [report provider contract](../../orchestration/api/openrouter.md) for compatible model selection and pending live checks. Configuration alone does not verify access.

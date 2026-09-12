@@ -4,6 +4,8 @@ A construction workspace connecting Telegram reports to project records and revi
 
 Use Node 24.21.0 and pnpm 11.24.0. Run `pnpm install`, then `pnpm check`. Copy `.env.example` to `.env` and fill in configuration locally. Scripts read process environment; load your environment through your shell or deployment launcher without printing secrets. Run `DATABASE_URL=... pnpm db:migrate` against your local database. `pnpm dev` starts the API, worker and web development processes. The Vite web server proxies `/api` to port 3000.
 
+Set `AI_PROVIDER=openrouter` or `AI_PROVIDER=vercel` to select report transcription and interpretation. OpenRouter is the default when unset. Configure the selected provider's key and separate transcription/interpretation models from `.env.example`; the other provider's variables may stay empty. Restart API and worker together after switching. Vercel transcription is in beta and may require account access. See the [report provider contract](orchestration/api/openrouter.md) for formats, model requirements and pending live checks.
+
 `pnpm demo:preflight` reports database-backed configuration and recovery state without probing providers. Admins can inspect jobs, export current or historical runs, and reset the demo from the workspace. The CLI equivalent is `pnpm demo:reset <run-id> "RESET <run-id>"`; unresolved writes must be reconciled first.
 
 Compose defines PostgreSQL plus an API and worker with private persistent storage. Set `POSTGRES_PASSWORD`, run migrations before starting application services, and attach an existing HTTPS reverse proxy to localhost port 3000. No deployment host is configured yet. Provider secrets remain server-side.

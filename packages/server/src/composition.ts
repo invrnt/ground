@@ -5,7 +5,7 @@ import { BotTelegramAdapter } from './adapters/telegram';
 import { IngestionService, PgIngestionRepository, ingestionModule } from './modules/ingestion';
 import { SiteService, siteModule, type ProposalInvalidation } from './modules/site';
 import { InterpretationWorkflow, InterpretationRepository, interpretationModule } from './modules/interpretation';
-import { OpenRouterReportAdapter } from './adapters/openrouter';
+import { ReportProviderAdapter, reportProviderConfiguration } from './adapters/report-provider';
 import { LiveService, liveModule } from './modules/live';
 import { ExaClient } from './adapters/exa';
 import { SourcingService, sourcingModule } from './modules/sourcing';
@@ -53,11 +53,10 @@ export function createComposition(): Composition {
   const delivery=new DispatchService({transactions:runtime.transactions,queue:runtime.queue,authorization:{authorizedDispatch:(context,id,version,tx)=>procurement?procurement.authorizedDispatch(context,id,version,tx):Promise.reject(new Error('Procurement is not registered'))},adapter,bot_id:botId,files:runtime.files,public_base_url:runtime.sessions.origin});
   dispatch=delivery;
   modules.push({...ingestionModule(service),registerRoutes:async app=>{app.post('/webhooks/telegram',{bodyLimit:1024*1024},async request=>delivery.webhook(request.headers['x-telegram-bot-api-secret-token'],request.body,async()=>{const input=await service.accept(request.headers['x-telegram-bot-api-secret-token'],request.body);return {accepted:true,input_id:input.id};}));}},dispatchModule(delivery,runtime.sessions));
-  const apiKey=process.env['OPENROUTER_API_KEY'],transcriptionModel=process.env['OPENROUTER_TRANSCRIPTION_MODEL'],interpretationModel=process.env['OPENROUTER_INTERPRETATION_MODEL'];
-  if(apiKey&&transcriptionModel&&interpretationModel) {
-   const ffmpegPath=process.env['FFMPEG_PATH'];
-   const openrouter=new OpenRouterReportAdapter({api_key:apiKey,transcription_model:transcriptionModel,interpretation_model:interpretationModel,...(ffmpegPath?{ffmpeg_path:ffmpegPath}:{})},runtime.files);
-   workflow=new InterpretationWorkflow({transactions:runtime.transactions,repository:new InterpretationRepository(runtime.transactions),intake:repository,replies:service,projects:runtime.projects,commands,purchases,queries:reporting,queue:runtime.queue,files:runtime.files,adapter:openrouter});
+  const {config}=reportProviderConfiguration();
+  if(config) {
+   const reportProvider=new ReportProviderAdapter(config,runtime.files);
+   workflow=new InterpretationWorkflow({transactions:runtime.transactions,repository:new InterpretationRepository(runtime.transactions),intake:repository,replies:service,projects:runtime.projects,commands,purchases,queries:reporting,queue:runtime.queue,files:runtime.files,adapter:reportProvider});
    modules.push(interpretationModule(workflow,runtime.sessions));
   }
 
