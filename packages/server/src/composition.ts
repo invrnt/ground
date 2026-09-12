@@ -14,6 +14,8 @@ import { ReportingService, reportingModule, purchaseReportSections } from './mod
 import { ProcurementService, procurementModule } from './modules/procurement';
 import { AmbiguousClient } from './adapters/ambiguous';
 import { OfficeRepository, OfficeSyncService, workspaceSyncModule } from './modules/workspace-sync';
+import { DispatchService, dispatchModule } from './modules/dispatch';
+import { OperationsService, operationsModule } from './modules/operations';
 import type { FastifyInstance } from 'fastify';
 export interface ServerModule { name: string; poll?:()=>Promise<void>; registerRoutes?: (app: FastifyInstance) => Promise<void>; jobs?: Partial<Record<Job['kind'], (job: Job) => Promise<void>>>; }
 export interface Composition { runtime?: ReturnType<typeof createRuntime>; modules: readonly ServerModule[]; invoke: (name: ToolName, context: ActorContext, input: unknown) => Promise<unknown>; }
@@ -28,14 +30,14 @@ export function createRuntime(options?:{invalidation?:ProposalInvalidation;links
  return {pool,transactions,queue,files,sessions,projects,site};
 }
 export function createComposition(): Composition {
- let procurement:ProcurementService|undefined;let officeRepository:OfficeRepository|undefined;
+ let procurement:ProcurementService|undefined;let officeRepository:OfficeRepository|undefined;let dispatch:DispatchService|undefined;
  const runtime=createRuntime({invalidation:{changed:(input,tx)=>procurement?procurement.changed(input,tx):Promise.resolve()},links:(context,tx)=>officeRepository?officeRepository.links(context,tx):Promise.resolve([])});
  officeRepository=new OfficeRepository(runtime.transactions);
  const officeLinks=officeRepository;
  const modules:ServerModule[]=[projectModule(runtime.pool,runtime.sessions,runtime.files),siteModule(runtime.site,runtime.sessions)];
  const sourcing=new SourcingService({transactions:runtime.transactions,projects:runtime.projects,queue:runtime.queue,adapter:new ExaClient(process.env['EXA_API_KEY']??'')});
  const purchases=new PurchaseService({transactions:runtime.transactions,inventory:runtime.site});
- const reporting=new ReportingService({transactions:runtime.transactions,projects:runtime.projects,queue:runtime.queue,supplements:{links:(context,tx)=>officeLinks.links(context,tx),sources:(context,tx)=>sourcing.sourcesForRun(context,tx),purchases:async(context,tx)=>purchaseReportSections(await purchases.list(context,tx))}});
+ const reporting=new ReportingService({transactions:runtime.transactions,projects:runtime.projects,queue:runtime.queue,supplements:{followup:async(context,tx)=>dispatch?dispatch.reportSections(context,tx):[],links:(context,tx)=>officeLinks.links(context,tx),sources:(context,tx)=>sourcing.sourcesForRun(context,tx),purchases:async(context,tx)=>purchaseReportSections(await purchases.list(context,tx))}});
  const commands:SiteCommandService={execute:(input,tx)=>['register_purchase','confirm_receipt'].includes(input.proposal.type)?purchases.execute(input,tx):runtime.site.execute(input,tx)};
  modules.push(sourcingModule(sourcing,runtime.sessions),purchaseModule(purchases,runtime.sessions),reportingModule(reporting,runtime.sessions));
  const officeToken=process.env['AMBIGUOUS_API_TOKEN'],officeWorkspace=process.env['AMBIGUOUS_WORKSPACE_ID'],officeBase=process.env['AMBIGUOUS_BASE_URL'];
@@ -48,7 +50,9 @@ export function createComposition(): Composition {
   const adapter=new BotTelegramAdapter({token,webhook_secret:webhookSecret});
   const repository=new PgIngestionRepository(tx=>runtime.transactions.client(tx));
   const service=new IngestionService({bot_id:botId,adapter,repository,transactions:runtime.transactions,queue:runtime.queue,files:runtime.files,router:{route:(input,actor,tx)=>workflow?workflow.route(input,actor,tx):Promise.resolve(false)}});
-  modules.push(ingestionModule(service));
+  const delivery=new DispatchService({transactions:runtime.transactions,queue:runtime.queue,authorization:{authorizedDispatch:(context,id,version,tx)=>procurement?procurement.authorizedDispatch(context,id,version,tx):Promise.reject(new Error('Procurement is not registered'))},adapter,bot_id:botId,files:runtime.files,public_base_url:runtime.sessions.origin});
+  dispatch=delivery;
+  modules.push({...ingestionModule(service),registerRoutes:async app=>{app.post('/webhooks/telegram',{bodyLimit:1024*1024},async request=>delivery.webhook(request.headers['x-telegram-bot-api-secret-token'],request.body,async()=>{const input=await service.accept(request.headers['x-telegram-bot-api-secret-token'],request.body);return {accepted:true,input_id:input.id};}));}},dispatchModule(delivery,runtime.sessions));
   const apiKey=process.env['OPENAI_API_KEY'],transcriptionModel=process.env['OPENAI_TRANSCRIPTION_MODEL'],interpretationModel=process.env['OPENAI_INTERPRETATION_MODEL'];
   if(apiKey&&transcriptionModel&&interpretationModel) {
    const ffmpegPath=process.env['FFMPEG_PATH'];
@@ -61,6 +65,8 @@ export function createComposition(): Composition {
   modules.push({name:'telegram_configuration_pending',registerRoutes:async app=> { app.post('/webhooks/telegram',async()=>notReady('Telegram configuration')); }});
  }
  if(!workflow)modules.push({name:'interpretation_configuration_pending'});
+ if(!dispatch)modules.push({name:'dispatch_configuration_pending'});
+ modules.push(operationsModule(new OperationsService({transactions:runtime.transactions,queue:runtime.queue}),runtime.sessions));
  const activeWorkflow=workflow;
  const live=new LiveService(runtime.transactions,runtime.projects,{history:(context,id,tx)=>runtime.site.history(context,id,tx),...(activeWorkflow?{transcript:(context:ActorContext,id:string,tx:import('@ground/contracts').TransactionContext)=>activeWorkflow.transcriptForInput(context,id,tx)}:{})});
  procurement=new ProcurementService({transactions:runtime.transactions,projects:runtime.projects,queue:runtime.queue,sourcing,checkpoints:live,secret:process.env['SESSION_SECRET']??''});
