@@ -1,15 +1,29 @@
 import type { FastifyInstance } from 'fastify';
-import { notReady } from '@ground/contracts';
+import { GroundError, notReady } from '@ground/contracts';
 import type { ServerModule } from '../composition';
 import type { ChannelRouter, ChannelRuntime } from './router';
 import { SOCKET_MODE_TRUSTED } from '../adapters/slack';
 
 /** Telegram authenticates a webhook with a shared header token. */
 function registerTelegram(app: FastifyInstance, runtime: ChannelRuntime): void {
-  app.post(runtime.webhook_path, { bodyLimit: 1024 * 1024 }, async request => runtime.dispatch.webhook(request.headers['x-telegram-bot-api-secret-token'], request.body, async () => {
-    const input = await runtime.ingestion.accept(request.headers['x-telegram-bot-api-secret-token'], request.body);
-    return { accepted: true, input_id: input.id };
-  }));
+  app.post(runtime.webhook_path, { bodyLimit: 1024 * 1024 }, async request => {
+    const secret = request.headers['x-telegram-bot-api-secret-token'];
+    runtime.adapter.verifyWebhook(secret);
+    try {
+      return await runtime.dispatch.webhook(secret, request.body, async () => {
+        const input = await runtime.ingestion.accept(secret, request.body);
+        return { accepted: true, input_id: input.id };
+      });
+    } catch (error) {
+      // Telegram retries non-2xx responses. A permanently rejected, authenticated
+      // update must not block later reports; transient/storage failures still retry.
+      if (error instanceof GroundError && !error.retryable && ['FORBIDDEN', 'CONFLICT', 'VALIDATION_ERROR'].includes(error.code)) {
+        request.log.warn({ event: 'telegram_update_rejected', code: error.code });
+        return { accepted: false, reason: error.code };
+      }
+      throw error;
+    }
+  });
 }
 
 /**

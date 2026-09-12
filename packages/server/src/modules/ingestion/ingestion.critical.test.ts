@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import Fastify from 'fastify';
+import {ChannelRouter,channelsModule} from '../../channels';
+import {DispatchService} from '../dispatch/dispatch-service';
 import { randomUUID } from 'node:crypto';
 import { GroundError, type ActorContext, type Job, type TransactionContext } from '@ground/contracts';
 import { BotTelegramAdapter } from '../../adapters/telegram/telegram-adapter';
@@ -86,6 +89,7 @@ it.skipIf(!process.env['TEST_DATABASE_URL'])('persists concurrent duplicates and
     await database.pool.query("INSERT INTO scenario_runs(id,project_id,status,scenario_version,scenario_date,created_at) VALUES($1,$2,'active','test','2026-09-12','2026-01-01')", [run,project]);
     await database.pool.query("INSERT INTO channel_bindings(chat_id,project_id) VALUES('-10',$1)", [project]);
     for (const sender of ['1','2']) await database.pool.query("INSERT INTO members(id,project_id,username,display_name,password_hash,roles,telegram_sender_id) VALUES($1,$2,$3,$3,'unused',ARRAY['worker'],$4)", [randomUUID(),project,`test-${sender}`,sender]);
+    await database.pool.query("INSERT INTO member_channel_identities(project_id,member_id,provider,external_id) SELECT project_id,id,'telegram',telegram_sender_id FROM members WHERE project_id=$1",[project]);
     const transactions = new PgTransactions(database.pool);
     const repository = new PgIngestionRepository(tx=>transactions.client(tx));
     const queue = new PgJobQueue(transactions);
@@ -96,6 +100,20 @@ it.skipIf(!process.env['TEST_DATABASE_URL'])('persists concurrent duplicates and
       throw Error('No sends in database check');
     });
     const service = new IngestionService({bot_id:'test-bot',adapter,repository,transactions,queue,files:{put:async()=>{},read:async()=>new Uint8Array(),remove:async()=>{}}});
+    const app=Fastify();
+    const dispatch=new DispatchService({transactions,queue,adapter,provider:'telegram',bot_id:'test-bot',files:{put:async()=>{},read:async()=>new Uint8Array(),remove:async()=>{}},public_base_url:'http://localhost:3000',authorization:{authorizedDispatch:async()=>{throw Error('No dispatch expected');}}});
+    await channelsModule(new ChannelRouter([{provider:'telegram',bot_id:'test-bot',adapter,webhook_path:'/webhooks/telegram',ingestion:service,dispatch}],{providerOf:async()=>null})).registerRoutes?.(app);
+    try {
+      const send=(payload:Record<string,unknown>,secret='test-secret')=>app.inject({method:'POST',url:'/webhooks/telegram',headers:{'x-telegram-bot-api-secret-token':secret},payload});
+      const stale=await send({...text(20,120,1),message:{...text(20,120,1).message,date:1700000000}});
+      expect(stale.statusCode).toBe(200);expect(stale.json()).toEqual({accepted:false,reason:'FORBIDDEN'});
+      const unsupported=await send({update_id:21,my_chat_member:{}});expect(unsupported.statusCode).toBe(200);expect(unsupported.json().accepted).toBe(false);
+      expect((await send(text(22,122,1),'wrong-secret')).statusCode).not.toBe(200);
+      expect((await database.pool.query('SELECT count(*)::int AS count FROM ingestion_inputs')).rows[0]?.count).toBe(0);
+      expect((await send(text(10,100,1))).statusCode).toBe(200);
+      const authorize=repository.authorize.bind(repository);repository.authorize=async()=>{throw new GroundError('PROVIDER_UNAVAILABLE','Temporary storage failure',true);};
+      expect((await send(text(23,123,1))).statusCode).toBeGreaterThanOrEqual(500);repository.authorize=authorize;
+    } finally {await app.close();}
     const results = await Promise.all([1,2,3].map(()=>service.accept('test-secret',text(10,100,1))));
     const first = results[0]; if (!first) throw Error('Missing first input');
     expect(new Set(results.map(result=>result.id)).size).toBe(1);
