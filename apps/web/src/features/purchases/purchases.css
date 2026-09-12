@@ -1,0 +1,12 @@
+.purchases-panel { display: grid; gap: 1rem; margin-block: 1.5rem; }
+.purchases-heading,.purchase-overview { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.purchases-heading h2 { margin: 0; }
+.purchases-list { display: grid; gap: 1rem; }
+.purchase-total { font-size: 1.4rem; }
+.purchase-lines { display: grid; gap: .75rem; margin-block: 1rem; }
+.purchase-line { display: grid; gap: .35rem; padding-block: .6rem; border-bottom: 1px solid var(--g-border,#d8dee8); }
+.purchase-evidence { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
+.purchase-receipt-form { display: grid; gap: .9rem; margin-top: 1rem; padding: 1rem; border: 1px solid var(--g-border,#d8dee8); border-radius: .5rem; }
+.purchase-receipt-form h3,.purchase-receipt-form p { margin: 0; }
+.purchase-confirmation { display: flex; align-items: flex-start; gap: .65rem; }
+.purchase-confirmation input { width: 1.2rem; height: 1.2rem; flex-shrink: 0; }

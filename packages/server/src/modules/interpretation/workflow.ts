@@ -1,5 +1,6 @@
 import { createHash,randomBytes,randomUUID,timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
+import type { PurchaseList } from '@ground/contracts';
 import { GroundError, operationProposalSchema, interpretationResultSchema, operationResultSchema, type ActorContext, type Clarification, type Job, type JobQueue, type OperationResult, type PrivateFileStore, type ProjectRepository, type SiteCommandService, type TransactionContext } from '@ground/contracts';
 import type { PgTransactions } from '../../infra/database';
 import { permissions } from '../../infra/sessions';
@@ -10,7 +11,7 @@ import { assertExtraction,resolveCommand } from './resolve-extraction';
 const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
 export interface QueryPort { answer(context:ActorContext,question:string):Promise<{text:string}>; }
 export class InterpretationWorkflow implements AuthorizedReplyRouter {
- constructor(private readonly deps:{transactions:PgTransactions;repository:InterpretationRepository;intake:IngestionRepository;replies:IngestionService;projects:ProjectRepository;commands:SiteCommandService;queue:JobQueue;files:PrivateFileStore;adapter:OpenAIReportAdapter;queries?:QueryPort}){}
+ constructor(private readonly deps:{transactions:PgTransactions;repository:InterpretationRepository;intake:IngestionRepository;replies:IngestionService;projects:ProjectRepository;commands:SiteCommandService;queue:JobQueue;files:PrivateFileStore;adapter:OpenAIReportAdapter;purchases?:{list(context:ActorContext,tx?:TransactionContext):Promise<PurchaseList>};queries?:QueryPort}){}
  async transcriptForInput(context:ActorContext,inputId:string,tx?:TransactionContext):Promise<string|null>{if(!tx)return this.deps.transactions.run(current=>this.transcriptForInput(context,inputId,current));await this.deps.projects.snapshot(context,tx);const row=await this.deps.repository.get(inputId,tx);if(row&&(row.project_id!==context.project_id||row.run_id!==context.run_id))throw new GroundError('FORBIDDEN','Transcript access denied');return row?.transcript??null;}
  private async source(id:string,tx:TransactionContext){const input=await this.deps.intake.getInput(id,tx);const actor=await this.deps.intake.authorize(input.message.chat_id,input.message.sender_id,new Date().toISOString(),tx);if(actor.run_id!==input.message.run_id)throw new GroundError('CONFLICT','Input run retired');actor.permissions=permissions(actor.roles);return {input,actor};}
  async process(job:Job):Promise<void>{
@@ -24,7 +25,8 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
      record.status='processing';await repository.save(record,tx);
      const linked=await repository.linkedMedia(input,tx);
      input.message={...input.message,media:linked};
-     return {input,actor,record,context:await this.deps.projects.snapshot(actor,tx)};
+     const snapshot=await this.deps.projects.snapshot(actor,tx);const purchases=this.deps.purchases?(await this.deps.purchases.list(actor,tx)).purchases:[];
+     return {input,actor,record,context:{...snapshot,purchases}};
    });
    if(!initial)return;
    const {input,actor,record}=initial;
@@ -63,7 +65,8 @@ export class InterpretationWorkflow implements AuthorizedReplyRouter {
            const committed=readOutcomes(current?.metadata['command_outcomes']).find(item=>item.index===index);
            if(committed)return committed;
            const context=await this.deps.projects.snapshot(actor,tx);
-           const proposal=resolveCommand(command,context,[input.id,...input.message.media.map(media=>media.id)],input.message.media.find(media=>media.kind==='document')?.sha256??null,newIssue);
+           const purchases=this.deps.purchases?(await this.deps.purchases.list(actor,tx)).purchases:[];
+           const proposal=resolveCommand(command,context,[input.id,...input.message.media.map(media=>media.id)],(input.message.media.find(media=>media.kind==='document')??input.message.media.find(media=>media.kind==='photo'))?.sha256??null,newIssue,purchases);
            const result=await this.deps.commands.execute({context:actor,proposal,source_message_id:input.id,idempotency_key:`input:${input.id}:command:${index}:answer:${record.question_count}`},tx);
            if(!['applied','already_applied'].includes(result.status))throw new GroundError('VALIDATION_ERROR','El cambio necesita revisión. Confirma los datos y las existencias.');
            const item={index,source_hash:hash(JSON.stringify(command)),proposal,result};
