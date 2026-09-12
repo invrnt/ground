@@ -32,3 +32,5 @@ export interface AmbiguousAdapter {
 }
 export interface InventoryReceiptInput { context:ActorContext; material_id:string; quantity:string; unit:string; receipt_line_id:string; idempotency_key:string; evidence_ids:string[]; expected_version:number; }
 export interface InventoryReceiptService extends InventoryService { receive(input:InventoryReceiptInput,tx?:TransactionContext):Promise<OperationResult>; }
+
+export interface CoalescingJobQueue extends JobQueue { enqueueLatest(job:Job,tx:TransactionContext):Promise<void>; }

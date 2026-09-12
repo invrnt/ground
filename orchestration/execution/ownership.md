@@ -54,3 +54,5 @@ Do not add an unowned file silently. The S owner assigns it in this table and th
 Stage 3 temporary grant from the Orchestrator: site-domain may edit `packages/server/src/modules/project/repository.ts` solely to extend the canonical snapshot with site entities, aliases and computed progress. The prior runtime owner is inactive for this path. No second snapshot implementation is authorized.
 
 Stage 4 temporary grant from the Orchestrator: sourcing may edit `packages/domain/src/quantities.ts` solely to add the canonical alternate-coverage candidate calculation. The prior site-domain owner is inactive. Other domain paths remain read-only.
+
+Stage 4 temporary grants from the Orchestrator: sourcing may edit `packages/server/src/infra/jobs.ts` solely for canonical report-job coalescing, preserving active leases and uncertain writes. Purchases may edit `packages/server/src/modules/interpretation/workflow.ts` and `packages/server/src/modules/interpretation/resolve-extraction.ts` solely for purchase/line context and photo invoice hashes. Prior owners are inactive for these paths; the shared owner wires the injections.

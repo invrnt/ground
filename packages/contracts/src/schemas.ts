@@ -79,5 +79,5 @@ export const queryAnswerSchema=z.object({answer:z.string(),version:z.number().in
 export type QueryAnswer=z.infer<typeof queryAnswerSchema>;
 export const purchaseSchema=z.object({id:idSchema,project_id:idSchema,run_id:idSchema,issuer:z.string().nullable(),reference:z.string().nullable(),invoice_date:dateSchema.nullable(),currency:z.literal('COP'),total:decimalSchema.nullable(),status:z.enum(['recorded','partially_received','received']),evidence_ids:z.array(idSchema),lines:z.array(z.object({id:idSchema,material_id:idSchema,material_name:z.string(),quantity:decimalSchema,received_quantity:decimalSchema,unit:z.string(),unit_price:decimalSchema.nullable(),total:decimalSchema.nullable()}).strict()),receipts:z.array(z.object({id:idSchema,confirmed_at:timestampSchema,lines:z.array(z.object({line_id:idSchema,quantity:decimalSchema}).strict())}).strict()),version:z.number().int()}).strict();
 export type Purchase=z.infer<typeof purchaseSchema>;
-export const purchaseListSchema=z.object({purchases:z.array(purchaseSchema),can_receive:z.boolean(),can_view_costs:z.boolean()}).strict();
+export const purchaseListSchema=z.object({project_version:z.number().int(),purchases:z.array(purchaseSchema),can_receive:z.boolean(),can_view_costs:z.boolean()}).strict();
 export type PurchaseList=z.infer<typeof purchaseListSchema>;
