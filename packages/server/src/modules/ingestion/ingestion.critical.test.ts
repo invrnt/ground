@@ -105,7 +105,8 @@ it.skipIf(!process.env['TEST_DATABASE_URL'])('persists concurrent duplicates and
     const photo = await service.accept('test-secret',{update_id:12,message:{message_id:102,date:1800000001,chat:{id:-10},from:{id:2},reply_to_message:{message_id:100},photo:[{file_id:'photo',file_unique_id:'photo',file_size:4}]}});
     const row = (await database.pool.query<Record<string, unknown>>("SELECT * FROM scheduled_jobs WHERE condition='intake_media' AND payload->>'subject_id'=$1",[photo.id])).rows[0];
     if (!row || !(row['available_at'] instanceof Date)) throw Error('Missing media job');
-    const job = jobSchema.parse({...row,available_at:row['available_at'].toISOString(),due_at:null,lease_expires_at:null});
+    const { desired_job: _desiredJob, ...publicJob } = row;
+    const job = jobSchema.parse({...publicJob,available_at:row['available_at'].toISOString(),due_at:null,lease_expires_at:null});
     await service.handleJob(job);
     await service.handleJob(job);
     const retained = await transactions.run(tx=>repository.getInput(photo.id,tx));

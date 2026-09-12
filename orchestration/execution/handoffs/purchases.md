@@ -36,3 +36,11 @@ Workflow now optionally consumes `purchases.list(context, tx)` and supplies that
 ## Versions and configuration
 
 No dependency/version changes. Reused shared schemas, decimal.js 10.6.0 through domain functions, pg 8.23.0, TypeScript 5.9.3, React 19.3.0, Vitest 3.2.7 and the existing API client/UI/formatters. Runtime's verified PostgreSQL transaction findings apply; no new provider documentation was needed. No new configuration names or secrets.
+
+## Stage 4 integration repair
+
+Rebased onto merged delivery `8070631` for the Orchestrator's bounded repair. Purchase list now uses SHARE locks, while mutation scope retains UPDATE locks. Both acquire the active run before the project. Reporting can therefore pass its existing shared transaction through purchase reads without an UPDATE lock upgrade.
+
+A temporary isolated PostgreSQL probe placed two transactions behind a barrier after both acquired run/project SHARE locks. Both completed `PurchaseService.list` without blocking or upgrading; the probe was removed. The existing purchases critical case passed again, and server typecheck passed. No UI or unrelated tests were repeated.
+
+The Orchestrator separately granted exactly `modules/ingestion/ingestion.critical.test.ts` to adapt its SELECT-star fixture to queue-internal `desired_job`. The fixture omits that private field before parsing the public Job, matching production queue decoding. All three affected ingestion tests passed, including isolated PostgreSQL. No production intake behavior changed. FEEDBACK.md remains absent.

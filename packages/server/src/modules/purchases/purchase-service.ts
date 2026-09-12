@@ -19,10 +19,10 @@ export class PurchaseService {
   if(prior.rows[0]){if(prior.rows[0].actor_id!==scope.context.actor_id||!prior.rows[0].matches)throw new GroundError('CONFLICT','Idempotency key belongs to a different purchase operation');return {...operationResultSchema.parse(prior.rows[0].result),status:'already_applied'};}
   return proposal.type==='register_purchase'?this.record(scope,input,proposal):this.confirm(scope,input,proposal);
  }
- private async scope(context:ActorContext,tx:TransactionContext):Promise<Scope>{
+ private async scope(context:ActorContext,tx:TransactionContext,lock:'SHARE'|'UPDATE'='UPDATE'):Promise<Scope>{
   const parsed=actorContextSchema.parse(context),db=this.deps.transactions.client(tx);
-  if(!(await db.query("SELECT id FROM scenario_runs WHERE id=$1 AND project_id=$2 AND status='active' FOR UPDATE",[parsed.run_id,parsed.project_id])).rowCount)throw new GroundError('CONFLICT','Scenario is no longer active');
-  const project=await db.query<{version:number}>('SELECT version FROM projects WHERE id=$1 FOR UPDATE',[parsed.project_id]);
+  if(!(await db.query(`SELECT id FROM scenario_runs WHERE id=$1 AND project_id=$2 AND status='active' FOR ${lock}`,[parsed.run_id,parsed.project_id])).rowCount)throw new GroundError('CONFLICT','Scenario is no longer active');
+  const project=await db.query<{version:number}>(`SELECT version FROM projects WHERE id=$1 FOR ${lock}`,[parsed.project_id]);
   const member=await db.query<{roles:unknown}>('SELECT roles FROM members WHERE id=$1 AND project_id=$2',[parsed.actor_id,parsed.project_id]);if(!member.rows[0])throw new GroundError('FORBIDDEN','Project membership required');const roles=actorContextSchema.shape.roles.parse(member.rows[0].roles);if(!roles.length)throw new GroundError('FORBIDDEN','Project role required');
   return {db,tx,context:{...parsed,roles},version:project.rows[0]?.version??0};
  }
@@ -70,5 +70,5 @@ export class PurchaseService {
   const lines=await scope.db.query<Record<string,unknown>>('SELECT l.id,l.material_id,m.name AS material_name,l.quantity::text,l.received_quantity::text,l.unit,l.unit_price::text,l.total::text FROM purchase_lines l JOIN materials m ON m.id=l.material_id WHERE purchase_id=$1 ORDER BY l.id',[id]);const receipts=await scope.db.query<{id:string;confirmed_at:Date;lines:unknown}>('SELECT id,confirmed_at,lines FROM purchase_receipts WHERE purchase_id=$1 ORDER BY confirmed_at',[id]);
   return purchaseSchema.parse({...row,lines:lines.rows,receipts:receipts.rows.map(receipt=>({...receipt,confirmed_at:receipt.confirmed_at.toISOString()}))});
  }
- async list(context:ActorContext,tx?:TransactionContext):Promise<PurchaseList>{if(!tx)return this.deps.transactions.run(current=>this.list(context,current));const scope=await this.scope(context,tx);const ids=await scope.db.query<{id:string}>('SELECT id FROM purchases WHERE project_id=$1 AND run_id=$2 ORDER BY reference,id LIMIT 100',[scope.context.project_id,scope.context.run_id]);const purchases:Purchase[]=[];for(const {id}of ids.rows){const purchase=await this.read(scope,id);purchases.push(costs(scope.context)?purchase:{...purchase,total:null,evidence_ids:[],lines:purchase.lines.map(line=>({...line,unit_price:null,total:null}))});}return purchaseListSchema.parse({purchases,project_version:scope.version,can_receive:receive(scope.context),can_view_costs:costs(scope.context)});}
+ async list(context:ActorContext,tx?:TransactionContext):Promise<PurchaseList>{if(!tx)return this.deps.transactions.run(current=>this.list(context,current));const scope=await this.scope(context,tx,'SHARE');const ids=await scope.db.query<{id:string}>('SELECT id FROM purchases WHERE project_id=$1 AND run_id=$2 ORDER BY reference,id LIMIT 100',[scope.context.project_id,scope.context.run_id]);const purchases:Purchase[]=[];for(const {id}of ids.rows){const purchase=await this.read(scope,id);purchases.push(costs(scope.context)?purchase:{...purchase,total:null,evidence_ids:[],lines:purchase.lines.map(line=>({...line,unit_price:null,total:null}))});}return purchaseListSchema.parse({purchases,project_version:scope.version,can_receive:receive(scope.context),can_view_costs:costs(scope.context)});}
 }
