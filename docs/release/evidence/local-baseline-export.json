@@ -1,0 +1,31 @@
+{
+  "run_id": "58f95b2e-3ead-43fc-93ea-4ad2f7005c67",
+  "scenario_version": "la-arboleda-v1",
+  "code_version": "52833a7",
+  "model_versions": {},
+  "sdk_versions": {
+    "copilotkit": "1.71.1",
+    "ag-ui": "0.0.59",
+    "openai": "7.15.0",
+    "pg": "8.23.0",
+    "ambiguous_api": "1"
+  },
+  "inputs": [],
+  "operations": [],
+  "proposals": [],
+  "events": [],
+  "sources": [],
+  "approvals": [],
+  "requests": [],
+  "jobs": [],
+  "remote_links": [],
+  "provider_calls": [],
+  "input_refs": [],
+  "request_proposals": [],
+  "supplier_candidates": [],
+  "reports": [],
+  "observations": [],
+  "followups": [],
+  "recipient_replies": [],
+  "redaction_notice": "Known credentials and secret-looking text are redacted. Original media bytes, passwords and checkpoint tokens are excluded. Provider attempts, verified remote results and SDK checkpoints are distinct. Missing code version or costs remain unknown."
+}

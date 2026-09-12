@@ -16,6 +16,9 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgres://ground:${POSTGRES_PASSWORD}@db:5432/ground
+      HOST: 0.0.0.0
+      PRIVATE_STORAGE_PATH: /storage/private
+      WEB_DIST: /app/apps/web/dist
     ports:
       - 127.0.0.1:3000:3000
     volumes:
@@ -29,6 +32,9 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgres://ground:${POSTGRES_PASSWORD}@db:5432/ground
+      HOST: 0.0.0.0
+      PRIVATE_STORAGE_PATH: /storage/private
+      WEB_DIST: /app/apps/web/dist
     volumes:
       - private-files:/storage/private
     depends_on:

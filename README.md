@@ -27,3 +27,7 @@ Start the API with `pnpm --filter @ground/api dev` and the worker with `pnpm --f
 An isolated PostgreSQL fixture is available in `packages/server/src/infra/test-database.ts`; it creates and removes a unique schema, without touching demo rows. `DATABASE_URL=... pnpm exec tsx tools/probes/runtime-check.ts` checks seed idempotence, session denial and a persisted job across reopened connections. It makes no external provider calls.
 
 Procurement requires a stable `SESSION_SECRET` of at least 32 characters. Keep it outside Git and preserve it across restarts so pending checkpoint tokens remain recoverable. Configure the manifest's reachable Demo recipient and test address before preparing requests. Approval records an exact RFQ and a pending dispatch job; it does not create a purchase or receipt. Office synchronization is registered only when its token and workspace are configured. Ambiguous's native task field is date-only; exact Bogotá/UTC review time is retained in the managed task description.
+
+## Release package
+
+See [the release runbook](docs/release/runbook.md), [validation record](docs/release/validation.md) and [recording assets](docs/release/recording/README.md). The local gate passes; live provider acceptance, the 120-second recording and event submission details remain pending user configuration.
