@@ -6,4 +6,4 @@ Start with [the runbook](runbook.md). [Validation](validation.md) separates exec
 
 The release gate checked application commit `52833a7033eb801163fb5159bb9bee0cba5e7a89`. All 13 tests across the seven critical files passed with real isolated PostgreSQL schemas, and typecheck/build passed. This release contribution fixes Compose bind/storage configuration and adds delivery documentation. Compose configuration parsing passed after that fix. Docker execution and a live all-provider journey are not claimed.
 
-The Orchestrator performs the final repository PR feedback check after this contribution merges. Its result will be recorded in `feedback-review.md`; absence of that record means the final feedback review has not been recorded yet.
+The Orchestrator completed the post-merge repository PR feedback check. No PRs or root feedback notes were present; see [the final review record](feedback-review.md).
