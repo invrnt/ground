@@ -14,3 +14,4 @@ export function projectModule(pool:pg.Pool,sessions:Sessions,files:LocalPrivateF
  }}; }
 export * from './seed';
 export * from './manifest';
+export * from './repository';
