@@ -1,0 +1,2 @@
+ALTER TABLE dispatch_replies ADD COLUMN last_error text;
+CREATE TABLE operations_observations(id uuid PRIMARY KEY,project_id uuid NOT NULL,run_id uuid NOT NULL,actor_id uuid NOT NULL REFERENCES members,kind text NOT NULL,subject_id uuid NOT NULL,outcome text NOT NULL,provider_reference text,note text NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(run_id,kind,subject_id),FOREIGN KEY(run_id,project_id) REFERENCES scenario_runs(id,project_id));

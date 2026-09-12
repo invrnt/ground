@@ -64,3 +64,5 @@ Stage 5 temporary grants from the Orchestrator: procurement may extend `packages
 The Stage 5 project repository grant also permits an optional scoped office-links reader injection. The office module owns its SQL; the canonical snapshot calls that injected reader without creating a second store.
 
 Stage 6 temporary grants from the Orchestrator: operations may edit `packages/server/src/modules/project/seed.ts` solely to accept an existing transaction for atomic reset, and `packages/server/src/infra/jobs.ts` solely for canonical retryKnown/cancelRun helpers. Prior owners are inactive. Uncertain writes remain ineligible for blanket retry.
+
+The Stage 6 queue grant also covers reply_media read/storage retry classification and settleObserved after explicit audited admin observation. Observation never means automatic retry or verified remote content.
