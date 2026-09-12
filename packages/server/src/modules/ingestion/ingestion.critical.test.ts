@@ -15,8 +15,8 @@ function fixture() {
   const project_id = randomUUID(), run_id = randomUUID();
   const tx: TransactionContext = { transaction_id: randomUUID() };
   const repository: IngestionRepository = {
-    authorize: async (chat, sender, at) => {
-      if (chat !== '-10' || !['1','2'].includes(sender)) throw new GroundError('FORBIDDEN', 'Unauthorized');
+    authorize: async (provider, chat, sender, at) => {
+      if (provider !== 'telegram' || chat !== '-10' || !['1','2'].includes(sender)) throw new GroundError('FORBIDDEN', 'Unauthorized');
       return { actor_id: randomUUID(), project_id, run_id, roles: ['worker'], permissions: ['report:create'], trusted_time: at } satisfies ActorContext;
     },
     findUpdate: async (bot, update) => inputs.get(updates.get(`${bot}:${update}`) ?? '') ?? null,

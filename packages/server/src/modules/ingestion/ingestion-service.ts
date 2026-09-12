@@ -12,7 +12,7 @@ export class IngestionService {
     const incoming = adapter.inspectUpdate(raw);
     const now = this.deps.now?.() ?? new Date().toISOString();
     return transactions.run(async tx => {
-      const actor = await repo.authorize(incoming.chat_id, incoming.sender_id, now, tx, incoming.sent_at);
+      const actor = await repo.authorize(adapter.provider, incoming.chat_id, incoming.sender_id, now, tx, incoming.sent_at);
       const duplicate = await repo.findUpdate(this.deps.bot_id, incoming.update_id, tx);
       if (duplicate) return duplicate;
       const existing = await repo.findMessage(this.deps.bot_id, incoming.chat_id, incoming.message_id, actor.run_id, tx);
@@ -22,7 +22,7 @@ export class IngestionService {
       const attachment = message.media.some(m => m.kind === 'photo');
       const error = adapter.intakeError(raw);
       const id = randomUUID();
-      const input: StoredInput = { id, bot_id: this.deps.bot_id, operation_id: randomUUID(), report_id: attachment ? reply?.report_id ?? null : reply?.report_id ?? id, status: error ? 'failed' : attachment && !reply?.report_id ? 'awaiting_attachment' : 'accepted', message, callback: incoming.callback, error };
+      const input: StoredInput = { id, bot_id: this.deps.bot_id, provider: adapter.provider, operation_id: randomUUID(), report_id: attachment ? reply?.report_id ?? null : reply?.report_id ?? id, status: error ? 'failed' : attachment && !reply?.report_id ? 'awaiting_attachment' : 'accepted', message, callback: incoming.callback, error };
       await repo.insertInput(input, tx);
       await repo.recordUpdate(this.deps.bot_id, incoming.update_id, id, tx);
       await repo.appendEvent(input, 'input.received', tx);
@@ -56,13 +56,13 @@ export class IngestionService {
       for (const media of input.message.media) await this.deps.queue.enqueue(ingestionJob(input, 'sync_attachment', media.id, `attachment:${input.message.run_id}:${media.id}:${media.sha256 ?? ''}`), tx);
       return;
     }
-    const actor = await this.deps.repository.authorize(input.message.chat_id, input.message.sender_id, input.message.received_at, tx);
+    const actor = await this.deps.repository.authorize(input.provider, input.message.chat_id, input.message.sender_id, input.message.received_at, tx);
     if (this.deps.router && await this.deps.router.route(input, actor, tx)) return;
     await this.deps.queue.enqueue(ingestionJob(input, 'process_input', input.id, `telegram:${input.bot_id}:${input.message.update_id}`), tx);
   }
   async enqueueReply(input: StoredInput, text: string, tx: TransactionContext, callback_query_id: string | null = null): Promise<string> {
     const id = randomUUID();
-    const reply: ChannelReply = { id, input_id: input.id, project_id: input.message.project_id, run_id: input.message.run_id, operation_id: input.operation_id, chat_id: input.message.chat_id, reply_to_message_id: input.callback ? null : input.message.message_id, text, callback_query_id, status: 'pending', provider_message_id: null };
+    const reply: ChannelReply = { id, provider: input.provider, input_id: input.id, project_id: input.message.project_id, run_id: input.message.run_id, operation_id: input.operation_id, chat_id: input.message.chat_id, reply_to_message_id: input.callback ? null : input.message.message_id, text, callback_query_id, status: 'pending', provider_message_id: null };
     await this.deps.repository.saveReply(reply, tx);
     await this.deps.queue.enqueue(ingestionJob(input, 'send_channel_reply', id, `reply:${id}`), tx);
     return id;
@@ -72,12 +72,17 @@ export class IngestionService {
     if (![result.applied_count, result.pending_count, result.project_version].every(n => Number.isSafeInteger(n) && n >= 0)) throw new GroundError('VALIDATION_ERROR', 'Invalid committed summary');
     return this.enqueueReply({ ...input, operation_id: result.operation_id }, `Registré ${result.applied_count} cambios en la obra. Quedan ${result.pending_count} acciones pendientes. Versión del proyecto: ${result.project_version}.`, tx);
   }
+  /** True when this channel created the row, so every other channel leaves the job alone. */
+  private owns(row: { provider: StoredInput['provider']; bot_id?: string }): boolean {
+    return row.provider === this.deps.adapter.provider && (row.bot_id === undefined || row.bot_id === this.deps.bot_id);
+  }
   async handleJob(job: Job): Promise<void> {
     if (job.condition === 'intake_media') return this.retainMedia(job);
     const { repository: repo, transactions, adapter } = this.deps;
     const reply = await transactions.run(async tx => {
       await repo.assertActive(job.project_id, job.run_id, tx);
       const row = await repo.getReply(job.payload.subject_id, tx);
+      if (!this.owns(row)) return null;
       if (row.project_id !== job.project_id || row.run_id !== job.run_id) throw new GroundError('FORBIDDEN', 'Reply job scope mismatch');
       if (row.status === 'sent') return null;
       if (row.status !== 'pending') throw new GroundError('UNCERTAIN', 'Reply delivery requires reconciliation');
@@ -103,6 +108,7 @@ export class IngestionService {
   private async retainMedia(job: Job): Promise<void> {
     const { repository: repo, transactions, adapter, files } = this.deps;
     const input = await transactions.run(async tx => { await repo.assertActive(job.project_id, job.run_id, tx); return repo.getInput(job.payload.subject_id, tx); });
+    if (!this.owns(input)) return;
     if (input.message.project_id !== job.project_id || input.message.run_id !== job.run_id) throw new GroundError('FORBIDDEN', 'Input job scope mismatch');
     if (input.status === 'ready' || input.status === 'failed') return;
     try {
