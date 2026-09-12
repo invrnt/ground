@@ -40,3 +40,7 @@ Before delivery, run the [live journey and supplemental checks](critical-journey
 Thirty separately automated acceptance cases, twenty extra model inputs, statistical accuracy scoring, twenty timings per input class, claimed p95, five-user load campaigns, three mandatory consecutive rehearsals and exhaustive accessibility audits are deferred. Preserve the PRD's targets in the acceptance inventory. Mark observed, automated, inspected, untested or blocked; never invent a passing result.
 
 Stop retesting when the relevant checks are green. Repeat the full live journey only if a subsequent change invalidates its recorded result.
+
+## Credential timing override, 2026-09-12
+
+The user will create missing credentials later and explicitly asked implementation to proceed as if configured. Missing provider credentials do not block stage progression. Implement the real configurable adapters and record live checks as pending credentials. Local checks and SDK evidence remain required. Never label a provider call verified unless it actually ran successfully; release evidence must preserve pending checks.

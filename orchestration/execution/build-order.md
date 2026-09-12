@@ -25,3 +25,7 @@ Workers may execute Exa and independent Ambiguous jobs concurrently at runtime; 
 At Stage 7, freeze functionality. Fix only defects that prevent required behavior, safe approval, real provider evidence or a usable recording. The user removed benchmark campaigns and repeated rehearsal requirements. Do not cut invoice/receipt, correction, reset, Exa, Ambiguous or CopilotKit to save time.
 
 Each stage handoff names its merged commit, exact checks, known missing acceptance and the latest reviewed root feedback. Follow [parallel-workstreams.md](parallel-workstreams.md) for late human/PR feedback and repair worktrees.
+
+## Credential timing override, 2026-09-12
+
+Proceed through implementation stages while provider credentials are pending, per the user's explicit instruction. Preserve real adapter requirements and mark unrun live gates pending credentials. This changes stage scheduling, not truthfulness of integration evidence.

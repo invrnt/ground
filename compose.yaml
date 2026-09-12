@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:18.4-bookworm
+    environment:
+      POSTGRES_DB: ground
+      POSTGRES_USER: ground
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U ground -d ground]
+      interval: 5s
+      retries: 10
+  api:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://ground:${POSTGRES_PASSWORD}@db:5432/ground
+    ports:
+      - 127.0.0.1:3000:3000
+    volumes:
+      - private-files:/storage/private
+    depends_on:
+      db:
+        condition: service_healthy
+  worker:
+    build: .
+    command: [pnpm, --filter, '@ground/worker', exec, tsx, src/main.ts]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://ground:${POSTGRES_PASSWORD}@db:5432/ground
+    volumes:
+      - private-files:/storage/private
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  postgres-data:
+  private-files:

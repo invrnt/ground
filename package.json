@@ -1,0 +1,46 @@
+{
+  "name": "ground",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter ./apps/* dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck && tsc --noEmit -p tools/probes/tsconfig.json",
+    "test:critical": "vitest run --passWithNoTests",
+    "check": "pnpm typecheck && pnpm build && pnpm test:critical",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "demo:configure": "tsx scripts/preflight.ts configure",
+    "demo:seed": "tsx scripts/preflight.ts seed",
+    "demo:reset": "tsx scripts/preflight.ts reset",
+    "demo:preflight": "tsx scripts/preflight.ts",
+    "probe:server": "tsx tools/probes/server.ts",
+    "probe:client": "tsx tools/probes/client.ts"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "tsx": "4.23.13",
+    "vitest": "3.2.7",
+    "@types/node": "22.20.2",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  },
+  "dependencies": {
+    "pg": "8.23.0",
+    "zod": "3.25.76",
+    "@ag-ui/client": "0.0.59",
+    "@ag-ui/core": "0.0.59",
+    "@ag-ui/encoder": "0.0.59",
+    "@copilotkit/runtime": "1.71.1",
+    "@copilotkit/react-core": "1.71.1",
+    "@copilotkit/core": "1.71.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "fastify": "5.12.4",
+    "rxjs": "7.8.1"
+  }
+}
