@@ -23,3 +23,13 @@ No package version upgrades. Added the already pinned Zod 3.25.76 as an explicit
 Configuration additions: `DEMO_MANIFEST_PATH` and `DEMO_PASSWORD_ADMIN`, `DEMO_PASSWORD_LUIS`, `DEMO_PASSWORD_ANA`, `DEMO_PASSWORD_JUAN`, `DEMO_PASSWORD_PURCHASING`. No secret values recorded. README documents HTTPS, migration, configuration, seed and API/worker commands.
 
 FEEDBACK.md absent at start; Orchestrator reported no current GitHub PR feedback. Recheck before final stage integration.
+
+## Stage 2 integration
+
+Merged peer baseline: `5ed5dcd` on `codex/ground-delivery`. Runtime infrastructure commits `a0f01c7` and `02023a9` were merged before both peers. This integration commit connects `AuthBoundary`, sign-out and the shared workspace shell/styles, serves `/login` after a reload, registers the canonical Telegram webhook/job handler when credentials exist and exposes explicit configuration-pending status otherwise. `get_project_context` now uses the scoped context/catalog repository. Session reporting permission uses the intake port's `report:create` name. Later site/live owners extend the same canonical snapshot for their feature tables.
+
+The combined `TEST_DATABASE_URL=... pnpm check` passed all typechecks and package builds. Its database test initially failed because the temporary PostgreSQL process had stopped. Restarting the existing data directory restored it; rerunning only `pnpm test:critical` passed all three tests, including the isolated real PostgreSQL case. No build or broad test campaign was repeated. The gate is green from those completed checks.
+
+Integrated Fastify checks returned `/health/live` 200, `/health/ready` 200 after a persisted worker tick, and `/api/session` 401 without credentials. The earlier session probe verified password login and persisted session retrieval. Interface's handoff records the login screen browser inspection and its extension interruption; no complete browser login journey is claimed.
+
+No FEEDBACK.md was present before integration completion. Live Telegram acceptance remains pending real account configuration, per the user's credential timing override. The local `ground_runtime` database is migrated, separate from the foundation probe database, and contains no provisioned demo credentials. Feature tests use isolated schemas. Temporary PostgreSQL can be restarted with its existing binary and data directory under `/tmp/ground-foundation-pg`; this is development evidence, not the deployment path.
